@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Predicciones</title>
+
+  <nav style="background:#111; padding:10px; text-align:center;">
+    <a href="index.html" style="color:white; margin:0 15px;">🏠 Inicio</a>
+    <a href="stats.html" style="color:white; margin:0 15px;">📊 Estadísticas</a>
+    <a href="perfil.html" style="color:white; margin:0 15px;">👤 Mi Perfil</a>
+  </nav>
+
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+    h1, h2 { text-align: center; }
+    .content { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+    select { font-size: 16px; padding: 10px; margin-bottom: 20px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; word-wrap: break-word; }
+    th { background-color: #eee; }
+    .acierto { background-color: #d4edda; }
+    .fallo { background-color: #f8d7da; }
+    .user-block { margin-bottom: 30px; }
+    #historial-container { text-align: center; }
+  </style>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="content">
+    <h1>Historial de Predicciones</h1>
+
+    <label for="evento-select">Selecciona un evento para ver el historial:</label>
+    <select id="evento-select"></select>
+
+    <div id="historial-container"><p>Selecciona un evento para empezar.</p></div>
+  </div>
+
+<script>
+    const SUPABASE_URL = 'https://dvpckpkgiwicifweiupo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        await cargarEventos();
+        
+        const selector = document.getElementById("evento-select");
+        selector.addEventListener("change", mostrarHistorial);
+    });
+
+    async function cargarEventos() {
+        const selector = document.getElementById("evento-select");
+        selector.innerHTML = '<option value="">Cargando eventos...</option>';
+        
+        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').order('id', { ascending: false });
+
+        if (error) {
+            selector.innerHTML = '<option value="">Error al cargar eventos</option>';
+            return console.error(error);
+        }
+
+        selector.innerHTML = '<option value="">-- Selecciona un evento --</option>';
+        eventos.forEach(evento => {
+            selector.innerHTML += `<option value="${evento.id}">${evento.nombre}</option>`;
+        });
+    }
+
+    async function mostrarHistorial() {
+        const eventoId = document.getElementById("evento-select").value;
+        const container = document.getElementById("historial-container");
+
+        if (!eventoId) {
+            container.innerHTML = '<p>Selecciona un evento para empezar.</p>';
+            return;
+        }
+
+        container.innerHTML = '<p>Cargando historial...</p>';
+
+        const { data: peleas, error: peleasError } = await supabaseClient
+            .from('peleas')
+            .select('id')
+            .eq('evento_id', eventoId);
+        
+        if (peleasError || peleas.length === 0) {
+            container.innerHTML = '<p>No se encontraron peleas para este evento.</p>';
+            return console.error("Error o no hay peleas:", peleasError);
+        }
+        
+        const peleaIDs = peleas.map(p => p.id);
+
+        const { data: predicciones, error: predError } = await supabaseClient
+            .from('predicciones')
+            .select(`*, peleas(nombre), profiles(username)`)
+            .in('pelea_id', peleaIDs);
+
+        const { data: resultados, error: resError } = await supabaseClient
+            .from('resultados')
+            .select(`*, peleas(nombre)`)
+            .in('pelea_id', peleaIDs);
+
+        if (predError || resError) {
+            container.innerHTML = '<p>Error al cargar el historial.</p>';
+            return console.error(predError || resError);
+        }
+
+        const prediccionesPorUsuario = {};
+        for (const pred of predicciones) {
+            const userId = pred.usuario_id;
+            const username = pred.profiles ? pred.profiles.username : 'Usuario Desconocido';
+            if (!prediccionesPorUsuario[userId]) {
+                prediccionesPorUsuario[userId] = {
+                    username: username,
+                    predicciones: []
+                };
+            }
+            prediccionesPorUsuario[userId].predicciones.push(pred);
+        }
+
+        let html = '';
+        for (const userId in prediccionesPorUsuario) {
+            const userData = prediccionesPorUsuario[userId];
+            html += `<div class="user-block">
+                        <h2>${userData.username}</h2>
+                        <table>
+                            <thead>
+                                <tr><th>Pelea</th><th>Ganador Elegido</th><th>Método</th><th>Round</th><th>Ganador Real</th><th>Resultado Real</th><th>✔️</th></tr>
+                            </thead>
+                            <tbody>`;
+            
+            userData.predicciones.sort((a,b) => a.pelea_id - b.pelea_id).forEach(p => {
+                const res = resultados.find(r => r.pelea_id === p.pelea_id);
+                const acierto = res && res.ganador_real === p.ganador_elegido;
+
+                html += `<tr class="${acierto ? 'acierto' : 'fallo'}">
+                            <td>${p.peleas.nombre}</td>
+                            <td>${p.ganador_elegido}</td>
+                            <td>${p.metodo_elegido || '-'}</td>
+                            <td>${p.round_elegido || '-'}</td>
+                            <td>${res ? res.ganador_real : 'N/A'}</td>
+                            <td>${res ? (res.metodo_real || 'N/A') + (res.round_real ? ' R' + res.round_real : '') : 'N/A'}</td>
+                            <td>${acierto ? '✅' : '❌'}</td>
+                         </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+        }
+
+        container.innerHTML = html || '<p>No hay predicciones para este evento.</p>';
+    }
+</script>
+
+</body>
+</html>
+
