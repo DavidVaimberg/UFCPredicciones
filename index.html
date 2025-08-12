@@ -1,379 +1,570 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Predicciones UFC</title>
-  
-  <nav style="background:#111; padding:10px; text-align:center;">
-    <a href="stats.html" style="color:white; margin:0 15px;">📊 Estadísticas</a>
-    <a href="historial.html" style="color:white; margin:0 15px;">📁 Historial</a>
-    <a href="perfil.html" style="color:white; margin:0 15px;">👤 Mi Perfil</a>
-  </nav>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Predicciones UFC</title>
+    
+    <nav>
+        <a href="stats.html">📊 Estadísticas</a>
+        <a href="historial.html">📁 Historial</a>
+        <a href="perfil.html">👤 Mi Perfil</a>
+    </nav>
 
-  <style>
-    body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 20px; }
-    h1, h2 { text-align: center; }
-    .fight, .login-box, .panel-box, .admin-box, .ranking-box { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
-    label { display: block; margin-top: 10px; }
-    .section { max-width: 800px; margin: auto; }
-    .submit-btn { display: block; margin: 20px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    .method, .round { margin-top: 10px; }
-    .hidden { display: none; }
-    input[type="text"], input[type="email"], input[type="password"], input[type="number"], select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; box-sizing: border-box; }
-    button { padding: 10px 15px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #eee; }
-    .acierto { background-color: #d4edda; }
-    .fallo { background-color: #f8d7da; }
-  </style>
+    <style>
+        /* --- INICIO DEL ESTILO CORREGIDO --- */
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1a;
+            color: #f2f2f2;
+            margin: 0;
+        }
+        .section {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        /* ---- Estilos para la Barra de Navegación (NAV) - ACTUALIZADO CON FLEXBOX ---- */
+        nav {
+            background: #111;
+            padding: 15px 5px;
+            text-align: center;
+            border-bottom: 2px solid #DAA520;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        nav a {
+            font-family: 'Anton', sans-serif;
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 1.2em;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+            flex-shrink: 0; 
+        }
+        nav a:hover {
+            color: #DAA520;
+        }
+
+        /* --- MEDIA QUERY PARA MÓVILES --- */
+        @media (max-width: 700px) {
+            nav {
+                justify-content: space-around; 
+            }
+            nav a {
+                font-size: 1em;
+                margin: 0 5px;
+                letter-spacing: normal;
+            }
+        }
+        /* ---- FIN DE ESTILOS DE NAVEGACIÓN ---- */
+
+        h1, h2, h3 {
+            font-family: 'Anton', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-align: center;
+            color: #DAA520;
+        }
+        h1 { font-size: 3em; }
+        .login-box, .fight, .admin-box, .ranking-box, .panel-box {
+            background: #2b2b2b;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            border-top: 4px solid #DAA520;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+        .fight:hover {
+            transform: translateY(-5px);
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #ccc;
+        }
+        input[type="text"], input[type="email"], input[type="password"], select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            background-color: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 5px;
+        }
+        button, .submit-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            background-color: #DAA520;
+            color: #1a1a1a;
+            border: none;
+            padding: 15px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover, .submit-btn:hover {
+            background-color: #ffffff;
+            transform: scale(1.02);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            font-family: 'Anton', sans-serif;
+            background-color: #333;
+            color: #DAA520;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .acierto { background-color: rgba(40, 167, 69, 0.2); }
+        .fallo { background-color: rgba(220, 53, 69, 0.2); }
+        .hidden {
+            display: none;
+        }
+        /* --- FIN DEL ESTILO GENERAL --- */
+        /* --- ESTILOS PARA LAS NUEVAS TARJETAS DE PELEA --- */
+.fight-title {
+    font-family: 'Anton', sans-serif;
+    text-align: center;
+    font-size: 1.2em;
+    color: #f2f2f2;
+    margin-bottom: 15px;
+}
+
+.fight-card-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+}
+
+.fighter-corner {
+    padding: 20px;
+    text-align: center;
+    border: 2px solid #555;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    /* --- LÍNEAS NUEVAS --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px; /* Evita que los botones sean muy delgados con nombres cortos */
+}
+
+.fighter-corner:hover {
+    background-color: #3c3c3c;
+}
+
+.fighter-corner.selected {
+    border-color: #DAA520; /* Borde dorado al seleccionar */
+    background-color: rgba(218, 165, 32, 0.1);
+    transform: scale(1.03);
+    box-shadow: 0 0 15px rgba(218, 165, 32, 0.4);
+}
+
+.fighter-name {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.vs-divider {
+    font-family: 'Anton', sans-serif;
+    color: #DAA520;
+    font-size: 1.5em;
+    align-self: center; /* <-- AÑADE ESTA LÍNEA */
+}
+
+/* Ocultamos los radio buttons originales, ahora las 'labels' hacen el trabajo */
+input[type="radio"].hidden {
+    display: none;
+}
+
+
+        
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <h1>Predicciones UFC</h1>
+    <h1>Predicciones UFC</h1>
 
-  <div class="section" id="auth-section">
-    <div class="login-box">
-      <div id="login-form">
-        <h2>Iniciar sesión</h2>
-        <label for="login-email">Email:</label>
-        <input type="email" id="login-email" placeholder="tu@email.com">
-        <label for="login-password">Contraseña:</label>
-        <input type="password" id="login-password">
-        <label for="event-selector">Selecciona evento:</label>
-        <select id="event-selector"></select>
-        <button onclick="login()">Entrar</button>
-        <p>¿No tienes cuenta? <a href="#" onclick="toggleAuthForms()">Regístrate</a></p>
-      </div>
-      <div id="register-form" class="hidden">
-        <h2>Crear cuenta</h2>
-        <label for="register-username">Nombre de usuario (corto, sin espacios):</label>
-        <input type="text" id="register-username" placeholder="ej: david">
-        <label for="register-email">Email:</label>
-        <input type="email" id="register-email" placeholder="tu@email.com">
-        <label for="register-password">Contraseña:</label>
-        <input type="password" id="register-password">
-        <button onclick="register()">Registrarme</button>
-        <p>¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForms()">Inicia sesión</a></p>
-      </div>
+    <div class="section" id="auth-section">
+        <div class="login-box">
+            <div id="login-form">
+                <h2>Iniciar sesión</h2>
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" placeholder="tu@email.com">
+                <label for="login-password">Contraseña:</label>
+                <input type="password" id="login-password">
+                <label for="event-selector">Selecciona evento:</label>
+                <select id="event-selector"></select>
+                <button onclick="login()">Entrar</button>
+                <p>¿No tienes cuenta? <a href="#" onclick="toggleAuthForms()">Regístrate</a></p>
+            </div>
+            <div id="register-form" class="hidden">
+                <h2>Crear cuenta</h2>
+                <label for="register-username">Nombre de usuario (corto, sin espacios):</label>
+                <input type="text" id="register-username" placeholder="ej: david">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" placeholder="tu@email.com">
+                <label for="register-password">Contraseña:</label>
+                <input type="password" id="register-password">
+                <button onclick="register()">Registrarme</button>
+                <p>¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForms()">Inicia sesión</a></p>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="section hidden" id="prediction-section">
-    <h2 id="welcome-user"></h2>
-    <div id="fight-list"></div>
-    <button class="submit-btn" id="submit-btn" onclick="submitPredictions()">Enviar Predicciones</button>
-    <button class="submit-btn" onclick="logout()" style="background-color:#d9534f; color:white;">Cerrar Sesión</button>
-  </div>
-
-  <div class="section hidden" id="admin-section">
-    <div class="admin-box">
-      <h2>Panel Administrador - Confirmar Resultados</h2>
-      <div id="admin-fight-list"></div>
-      <button class="submit-btn" onclick="saveResults()">Guardar Resultados</button>
-      
-      <button class="submit-btn" onclick="procesarLogros()" style="background-color:#5bc0de; margin-top:5px;">
-        🏆 Calcular Puntos y Repartir Logros
-      </button>
-
+    <div class="section hidden" id="prediction-section">
+        <div class="panel-box">
+            <h2 id="welcome-user"></h2>
+        </div>
+        <div id="fight-list"></div>
+        <button class="submit-btn" id="submit-btn" onclick="submitPredictions()">Enviar Predicciones</button>
+        <button class="submit-btn" onclick="logout()" style="background-color:#d9534f; color:white; margin-top:10px;">Cerrar Sesión</button>
     </div>
-  
+
+    <div class="section hidden" id="admin-section">
+        <div class="admin-box">
+            <h2>Panel Administrador - Confirmar Resultados</h2>
+            <div id="admin-fight-list"></div>
+            
+            <button class="submit-btn" onclick="guardarYProcesarResultados()" style="background-color:#5bc0de;">
+                💾 Guardar Resultados y Repartir Puntos/Logros
+            </button>
+            <button class="submit-btn" onclick="logout()" style="background-color:#d9534f; color:white; margin-top:10px;">
+                Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
 <script>
-  const SUPABASE_URL = 'https://dvpckpkgiwicifweiupo.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
-  
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = 'https://dvpckpkgiwicifweiupo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const ADMIN_EMAIL = "djvaimbergp@gmail.com";
 
-  // Email del admin configurado.
-  const ADMIN_EMAIL = "djvaimbergp@gmail.com"; 
+    let currentUser = null;
+    let currentEvent = null;
+    let peleasDelEvento = [];
 
-  let currentUser = null;
-  let currentEvent = null;
-  let peleasDelEvento = []; // Caché de peleas para no pedirlas de nuevo
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadActiveEvents();
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            currentUser = session.user;
+            const eventSelector = document.getElementById('event-selector');
+            if (eventSelector.value && eventSelector.value !== "No hay eventos activos") {
+                await showPredictionScreen();
+            }
+        }
+    });
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    await loadActiveEvents();
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) {
-        currentUser = session.user;
-        const eventSelector = document.getElementById('event-selector');
-        if (eventSelector.value && eventSelector.value !== "No hay eventos activos") {
-            await showPredictionScreen();
+    function toggleAuthForms() {
+        document.getElementById('login-form').classList.toggle('hidden');
+        document.getElementById('register-form').classList.toggle('hidden');
+    }
+
+    async function loadActiveEvents() {
+        const selector = document.getElementById('event-selector');
+        selector.innerHTML = '<option>Cargando eventos...</option>';
+        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').eq('esta_activo', true);
+        if (error) {
+            console.error('Error cargando eventos:', error);
+            selector.innerHTML = '<option>Error al cargar</option>';
+            return;
+        }
+        selector.innerHTML = '';
+        if (eventos.length === 0) {
+            selector.innerHTML = '<option>No hay eventos activos</option>';
+        } else {
+            eventos.forEach(evento => {
+                const option = document.createElement('option');
+                option.value = evento.id;
+                option.textContent = evento.nombre;
+                selector.appendChild(option);
+            });
         }
     }
-  });
 
-  function toggleAuthForms() {
-    document.getElementById('login-form').classList.toggle('hidden');
-    document.getElementById('register-form').classList.toggle('hidden');
-  }
-
-  async function loadActiveEvents() {
-    const selector = document.getElementById('event-selector');
-    selector.innerHTML = '<option>Cargando eventos...</option>';
-    const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').eq('esta_activo', true);
-    if (error) {
-      console.error('Error cargando eventos:', error);
-      selector.innerHTML = '<option>Error al cargar</option>';
-      return;
-    }
-    selector.innerHTML = '';
-    if (eventos.length === 0) {
-        selector.innerHTML = '<option>No hay eventos activos</option>';
-    } else {
-        eventos.forEach(evento => {
-            const option = document.createElement('option');
-            option.value = evento.id;
-            option.textContent = evento.nombre;
-            selector.appendChild(option);
+    async function register() {
+        const username = document.getElementById('register-username').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value.trim();
+        if (!username || !email || !password) return alert('Todos los campos son obligatorios.');
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: { data: { username: username } }
         });
-    }
-  }
-
-  async function register() {
-    const username = document.getElementById('register-username').value.trim();
-    const email = document.getElementById('register-email').value.trim();
-    const password = document.getElementById('register-password').value.trim();
-    if (!username || !email || !password) return alert('Todos los campos son obligatorios.');
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: email,
-      password: password,
-      options: { data: { username: username } }
-    });
-    if (error) return alert('Error al registrar: ' + error.message);
-    alert('¡Registro exitoso! Ya puedes iniciar sesión.');
-    toggleAuthForms();
-  }
-
-  async function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
-    if (error) return alert('Error al iniciar sesión: ' + error.message);
-    currentUser = data.user;
-    await showPredictionScreen();
-  }
-
-  async function logout() {
-    await supabaseClient.auth.signOut();
-    window.location.reload(); // Recarga la página para volver al estado inicial
-  }
-  
-  async function showPredictionScreen() {
-    const eventSelector = document.getElementById('event-selector');
-    if (!eventSelector.value || eventSelector.value === "No hay eventos activos") return;
-    
-    currentEvent = { id: eventSelector.value, name: eventSelector.options[eventSelector.selectedIndex].text };
-    
-    document.getElementById('auth-section').classList.add('hidden');
-    document.getElementById('prediction-section').classList.remove('hidden');
-    document.getElementById('welcome-user').innerText = `Bienvenido, ${currentUser.user_metadata.username || currentUser.email} (${currentEvent.name})`;
-    
-    if (currentUser.email === ADMIN_EMAIL) {
-        document.getElementById('admin-section').classList.remove('hidden');
-        renderAdminPanel();
-    } else {
-        document.getElementById('admin-section').classList.add('hidden');
+        if (error) return alert('Error al registrar: ' + error.message);
+        alert('¡Registro exitoso! Ya puedes iniciar sesión.');
+        toggleAuthForms();
     }
 
-    const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', currentEvent.id).limit(1);
-    if (peleasError || !peleas || peleas.length === 0) {
-        document.getElementById('fight-list').innerHTML = "<h2>No se encontraron peleas para este evento.</h2>";
-        return;
-    }
-    
-    const { count, error: predictionError } = await supabaseClient.from('predicciones').select('*', { count: 'exact', head: true }).eq('usuario_id', currentUser.id).eq('pelea_id', peleas[0].id);
-    if (predictionError) {
-        document.getElementById('fight-list').innerHTML = "<h2>Error al verificar tus predicciones.</h2>";
-        console.error("Error al contar predicciones:", predictionError);
-        return;
+    async function login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+        if (error) return alert('Error al iniciar sesión: ' + error.message);
+        currentUser = data.user;
+        await showPredictionScreen();
     }
 
-    if (count > 0) {
-        document.getElementById('fight-list').innerHTML = "<h2>Ya has guardado tus predicciones para este evento. ¡Mucha suerte!</h2>";
-        document.getElementById('submit-btn').classList.add('hidden');
-    } else {
-        renderFights();
-        document.getElementById('submit-btn').classList.remove('hidden');
+    async function logout() {
+        await supabaseClient.auth.signOut();
+        window.location.reload();
     }
-  }
 
-  async function renderFights() {
+    async function showPredictionScreen() {
+        const eventSelector = document.getElementById('event-selector');
+        if (!eventSelector.value || eventSelector.value === "No hay eventos activos") return;
+
+        currentEvent = { id: eventSelector.value, name: eventSelector.options[eventSelector.selectedIndex].text };
+
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('welcome-user').innerText = `Bienvenido, ${currentUser.user_metadata.username || currentUser.email} (${currentEvent.name})`;
+
+        if (currentUser.email === ADMIN_EMAIL) {
+            document.getElementById('admin-section').classList.remove('hidden');
+            document.getElementById('prediction-section').classList.add('hidden');
+            renderAdminPanel();
+
+        } else {
+            document.getElementById('admin-section').classList.add('hidden');
+            document.getElementById('prediction-section').classList.remove('hidden');
+
+            const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', currentEvent.id).limit(1);
+            if (peleasError || !peleas || peleas.length === 0) {
+                document.getElementById('fight-list').innerHTML = "<h2>No se encontraron peleas para este evento.</h2>";
+                return;
+            }
+            
+            const { count, error: predictionError } = await supabaseClient.from('predicciones').select('*', { count: 'exact', head: true }).eq('usuario_id', currentUser.id).eq('pelea_id', peleas[0].id);
+            if (predictionError) {
+                document.getElementById('fight-list').innerHTML = "<h2>Error al verificar tus predicciones.</h2>";
+                console.error("Error al contar predicciones:", predictionError);
+                return;
+            }
+
+            if (count > 0) {
+                document.getElementById('fight-list').innerHTML = "<h2>Ya has guardado tus predicciones para este evento. ¡Mucha suerte!</h2>";
+                document.getElementById('submit-btn').classList.add('hidden');
+            } else {
+                renderFights();
+                document.getElementById('submit-btn').classList.remove('hidden');
+            }
+        }
+    }
+
+    // REEMPLAZA TU FUNCIÓN renderFights CON ESTA
+// REEMPLAZA TU FUNCIÓN renderFights CON ESTA VERSIÓN CORREGIDA
+async function renderFights() {
     const container = document.getElementById("fight-list");
-    container.innerHTML = '<h2>Cargando peleas...</h2>';
+    container.innerHTML = '<div class="loader"></div>';
     const { data: peleas, error } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
+
     if (error) {
-      console.error('Error cargando peleas:', error);
-      container.innerHTML = '<h2>Error al cargar las peleas.</h2>';
-      return;
+        console.error('Error cargando peleas:', error);
+        container.innerHTML = '<h2>Error al cargar las peleas.</h2>';
+        return;
     }
+
     peleasDelEvento = peleas;
     container.innerHTML = '';
-    
+
     peleas.forEach(f => {
-      const div = document.createElement("div");
-      div.classList.add("fight");
-      div.setAttribute('data-pelea-id', f.id);
-      let extraFields = '';
-      if (f.tipo === 'Main Card') {
-        extraFields += `<div class="method"><label>Método de victoria:</label><select id="method_${f.id}"><option value="">Selecciona...</option><option value="KO">KO/TKO</option><option value="Submisión">Submisión</option><option value="Decisión">Decisión</option></select></div>`;
-      }
-      if (f.es_evento_principal) {
-        let roundOptions = '<option value="">Selecciona...</option>';
-        for (let i = 1; i <= f.numero_de_rounds; i++) {
-          roundOptions += `<option value="${i}">Round ${i}</option>`;
-        }
-        if (f.numero_de_rounds > 3) {
-            roundOptions += `<option value="Decision">Decisión</option>`;
-        }
-        extraFields += `<div class="round"><label><strong>Round en que termina:</strong></label><select id="round_${f.id}">${roundOptions}</select></div>`;
-      }
-      div.innerHTML = `<strong>${f.nombre}</strong><br><label><input type="radio" name="fight_${f.id}" value="${f.luchador1}"> ${f.luchador1}</label><label><input type="radio" name="fight_${f.id}" value="${f.luchador2}"> ${f.luchador2}</label>${extraFields}`;
-      container.appendChild(div);
-    });
-  }
+        const fightCard = document.createElement("div");
+        fightCard.className = "fight";
+        fightCard.setAttribute('data-pelea-id', f.id);
 
-  // REEMPLAZA TU FUNCIÓN 'submitPredictions' CON ESTA
-// En tu archivo index.html, reemplaza esta función
-async function submitPredictions() {
-    const predictionsToInsert = [];
-    for (const pelea of peleasDelEvento) {
-        const ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
-        if (!ganadorSeleccionado) return alert(`Debes elegir un ganador para la pelea: "${pelea.nombre}"`);
-        let metodo = null, round = null;
-        if (pelea.tipo === 'Main Card') {
-            const metodoSelect = document.getElementById(`method_${pelea.id}`);
-            if (!metodoSelect.value) return alert(`Debes elegir un método para la pelea de Main Card: "${pelea.nombre}"`);
-            metodo = metodoSelect.value;
-        }
-        if (pelea.es_evento_principal) {
-            const roundSelect = document.getElementById(`round_${pelea.id}`);
-            if (!roundSelect.value) return alert(`Debes elegir un round para la pelea principal`);
-            round = roundSelect.value;
-        }
-        predictionsToInsert.push({ usuario_id: currentUser.id, pelea_id: pelea.id, ganador_elegido: ganadorSeleccionado.value, metodo_elegido: metodo, round_elegido: round });
-    }
-
-    const { error } = await supabaseClient.from('predicciones').insert(predictionsToInsert);
-    if (error) {
-        console.error('Error al guardar las predicciones:', error);
-        return alert(`Hubo un error al guardar: ${error.message}`);
-    }
-
-    alert('¡Predicciones guardadas con éxito!');
-    document.getElementById('fight-list').innerHTML = "<h2>¡Gracias! Tus predicciones han sido guardadas. ¡Mucha suerte!</h2>";
-    document.getElementById('submit-btn').classList.add('hidden');
-
-    // --- Lógica para el logro "NOVATO VALIENTE" ---
-    try {
-        const { data: logro } = await supabaseClient.from('logros').select('id').eq('clave_unica', 'NOVATO_VALIENTE').single();
-        if (logro) {
-            // Esto solo funcionará la primera vez gracias a la restricción UNIQUE de la tabla
-            await supabaseClient.from('logros_obtenidos').insert({
-                usuario_id: currentUser.id,
-                logro_id: logro.id,
-                evento_id: currentEvent.id
-            });
-            console.log('Intento de dar logro "Novato Valiente" completado.');
-        }
-    } catch (error) {
-        console.log('El usuario probablemente ya tiene el logro "Novato Valiente".');
-    }
-}
-
-  async function renderAdminPanel() {
-    const container = document.getElementById("admin-fight-list");
-    container.innerHTML = '<h4>Cargando peleas para el panel...</h4>';
-
-    const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
-    if (peleasError) return console.error("Admin Error (peleas):", peleasError);
-    
-    peleasDelEvento = peleas; // Actualizamos el caché de peleas
-
-    const peleaIDs = peleas.map(p => p.id);
-    const { data: resultadosExistentes, error: resError } = await supabaseClient.from('resultados').select('*').in('pelea_id', peleaIDs);
-    if (resError) return console.error("Admin Error (resultados):", resError);
-
-    container.innerHTML = '';
-    peleas.forEach(f => {
-        const resultadoGuardado = resultadosExistentes.find(r => r.pelea_id === f.id) || {};
-        let extraFields = '';
+        // --- Lógica para crear los campos extra (Método y Round) ---
+        let extraFieldsHTML = '';
         if (f.tipo === 'Main Card') {
-            extraFields += `<br><label>Método Real:</label><select id="admin_method_${f.id}"><option value="">Selecciona...</option><option value="KO" ${resultadoGuardado.metodo_real === 'KO' ? 'selected' : ''}>KO/TKO</option><option value="Submisión" ${resultadoGuardado.metodo_real === 'Submisión' ? 'selected' : ''}>Submisión</option><option value="Decisión" ${resultadoGuardado.metodo_real === 'Decisión' ? 'selected' : ''}>Decisión</option></select>`;
+            extraFieldsHTML += `<div class="method"><label>Método de victoria:</label><select id="method_${f.id}"><option value="">Selecciona...</option><option value="KO">KO/TKO</option><option value="Submisión">Submisión</option><option value="Decisión">Decisión</option></select></div>`;
         }
         if (f.es_evento_principal) {
-            extraFields += `<br><label>Round Real:</label><input type="number" id="admin_round_${f.id}" min="1" max="${f.numero_de_rounds}" value="${resultadoGuardado.round_real || ''}">`;
+            let roundOptions = '<option value="">Selecciona...</option>';
+            for (let i = 1; i <= f.numero_de_rounds; i++) {
+                roundOptions += `<option value="${i}">Round ${i}</option>`;
+            }
+            // Corregido para que la opción de Decisión aparezca solo en peleas a más de 3 rounds
+            if (f.numero_de_rounds > 3) { 
+                 roundOptions += `<option value="Decision">Decisión</option>`;
+            }
+            extraFieldsHTML += `<div class="round"><label><strong>Round en que termina:</strong></label><select id="round_${f.id}">${roundOptions}</select></div>`;
         }
-        container.innerHTML += `<div style="margin-bottom:15px; padding:10px; border:1px solid #ddd;"><strong>${f.nombre}</strong><br><label><input type="radio" name="admin_winner_${f.id}" value="${f.luchador1}" ${resultadoGuardado.ganador_real === f.luchador1 ? 'checked' : ''}/> ${f.luchador1}</label><label><input type="radio" name="admin_winner_${f.id}" value="${f.luchador2}" ${resultadoGuardado.ganador_real === f.luchador2 ? 'checked' : ''}/> ${f.luchador2}</label>${extraFields}</div>`;
+        // --- Fin de la lógica de campos extra ---
+
+        // Creamos la estructura de la tarjeta de pelea, incluyendo los campos extra
+        fightCard.innerHTML = `
+            <div class="fight-title">${f.nombre}</div>
+            <div class="fight-card-container">
+                <input type="radio" name="fight_${f.id}" id="fighter1_${f.id}" value="${f.luchador1}" class="hidden">
+                <label for="fighter1_${f.id}" class="fighter-corner corner-1">
+                    <span class="fighter-name">${f.luchador1}</span>
+                </label>
+                
+                <div class="vs-divider">VS</div>
+
+                <input type="radio" name="fight_${f.id}" id="fighter2_${f.id}" value="${f.luchador2}" class="hidden">
+                <label for="fighter2_${f.id}" class="fighter-corner corner-2">
+                    <span class="fighter-name">${f.luchador2}</span>
+                </label>
+            </div>
+            <div class="extra-fields-container">
+                ${extraFieldsHTML}
+            </div>
+        `;
+
+        const corners = fightCard.querySelectorAll('.fighter-corner');
+        corners.forEach(corner => {
+            corner.addEventListener('click', () => {
+                fightCard.querySelectorAll('.fighter-corner').forEach(c => c.classList.remove('selected'));
+                corner.classList.add('selected');
+            });
+        });
+
+        container.appendChild(fightCard);
     });
-  }
+}
 
-  async function saveResults() {
-    const resultsToUpsert = [];
-    if (peleasDelEvento.length === 0) {
-        const { data: peleas } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id);
-        peleasDelEvento = peleas || [];
-    }
-
-    for (const pelea of peleasDelEvento) {
-        const ganador = document.querySelector(`input[name='admin_winner_${pelea.id}']:checked`);
-        if (ganador) {
-            let metodo = null;
-            let round = null;
+    async function submitPredictions() {
+        const predictionsToInsert = [];
+        for (const pelea of peleasDelEvento) {
+            const ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
+            if (!ganadorSeleccionado) return alert(`Debes elegir un ganador para la pelea: "${pelea.nombre}"`);
+            let metodo = null, round = null;
             if (pelea.tipo === 'Main Card') {
-                const metodoElem = document.getElementById(`admin_method_${pelea.id}`);
-                if (metodoElem) metodo = metodoElem.value;
+                const metodoSelect = document.getElementById(`method_${pelea.id}`);
+                if (!metodoSelect.value) return alert(`Debes elegir un método para la pelea de Main Card: "${pelea.nombre}"`);
+                metodo = metodoSelect.value;
             }
             if (pelea.es_evento_principal) {
-                const roundElem = document.getElementById(`admin_round_${pelea.id}`);
-                if (roundElem) round = roundElem.value;
+                const roundSelect = document.getElementById(`round_${pelea.id}`);
+                if (!roundSelect.value) return alert(`Debes elegir un round para la pelea principal`);
+                round = roundSelect.value;
             }
-            resultsToUpsert.push({ pelea_id: pelea.id, ganador_real: ganador.value, metodo_real: metodo, round_real: round });
+            predictionsToInsert.push({ usuario_id: currentUser.id, pelea_id: pelea.id, ganador_elegido: ganadorSeleccionado.value, metodo_elegido: metodo, round_elegido: round });
+        }
+
+        const { error } = await supabaseClient.from('predicciones').insert(predictionsToInsert);
+        if (error) {
+            console.error('Error al guardar las predicciones:', error);
+            return alert(`Hubo un error al guardar: ${error.message}`);
+        }
+
+        alert('¡Predicciones guardadas con éxito!');
+        document.getElementById('fight-list').innerHTML = "<h2>¡Gracias! Tus predicciones han sido guardadas. ¡Mucha suerte!</h2>";
+        document.getElementById('submit-btn').classList.add('hidden');
+
+        try {
+            const { data: logro } = await supabaseClient.from('logros').select('id').eq('clave_unica', 'NOVATO_VALIENTE').single();
+            if (logro) {
+                await supabaseClient.from('logros_obtenidos').insert({
+                    usuario_id: currentUser.id,
+                    logro_id: logro.id,
+                    evento_id: currentEvent.id
+                });
+                console.log('Intento de dar logro "Novato Valiente" completado.');
+            }
+        } catch (error) {
+            console.log('El usuario probablemente ya tiene el logro "Novato Valiente".');
         }
     }
 
-    if (resultsToUpsert.length === 0) return alert("No se ha seleccionado ningún resultado para guardar.");
-    
-    // Para que 'upsert' funcione, 'pelea_id' debe ser una llave única en la tabla 'resultados'.
-    // Ve a Supabase -> Table Editor -> resultados -> y asegúrate de que 'pelea_id' tiene el modificador 'isUnique'.
-    const { error } = await supabaseClient.from('resultados').upsert(resultsToUpsert, { onConflict: 'pelea_id' });
-    if (error) {
-        console.error("Error al guardar resultados:", error);
-        return alert("Hubo un error al guardar los resultados: " + error.message);
-    }
-    alert("¡Resultados guardados/actualizados con éxito!");
-  }
-  
-  // AÑADE ESTA NUEVA FUNCIÓN A TU SCRIPT
-// REEMPLAZA TU FUNCIÓN 'procesarLogros' CON ESTA
-// En index.html, reemplaza esta función
-async function procesarLogros() {
-    if (!currentEvent || !currentEvent.id) {
-        return alert("No hay un evento seleccionado.");
-    }
+    async function renderAdminPanel() {
+        const container = document.getElementById("admin-fight-list");
+        container.innerHTML = '<h4>Cargando peleas para el panel...</h4>';
 
-    const confirmacion = confirm("¿Estás seguro de que quieres procesar los puntos y logros para este evento? Esta acción es definitiva.");
-    if (!confirmacion) {
-        return;
-    }
+        const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
+        if (peleasError) return console.error("Admin Error (peleas):", peleasError);
+        
+        peleasDelEvento = peleas;
 
-    alert("Procesando... Esto puede tardar un momento.");
+        const peleaIDs = peleas.map(p => p.id);
+        const { data: resultadosExistentes, error: resError } = await supabaseClient.from('resultados').select('*').in('pelea_id', peleaIDs);
+        if (resError) return console.error("Admin Error (resultados):", resError);
 
-    const { data, error } = await supabaseClient.rpc('repartir_logros_evento', { 
-        evento_id_param: currentEvent.id 
-    });
-
-    if (error) {
-        console.error("Error al procesar logros:", error);
-        return alert("Hubo un error al procesar los logros. Revisa la consola para más detalles.");
+        container.innerHTML = '';
+        peleas.forEach(f => {
+            const resultadoGuardado = resultadosExistentes.find(r => r.pelea_id === f.id) || {};
+            let extraFields = '';
+            if (f.tipo === 'Main Card') {
+                extraFields += `<br><label>Método Real:</label><select id="admin_method_${f.id}"><option value="">Selecciona...</option><option value="KO" ${resultadoGuardado.metodo_real === 'KO' ? 'selected' : ''}>KO/TKO</option><option value="Submisión" ${resultadoGuardado.metodo_real === 'Submisión' ? 'selected' : ''}>Submisión</option><option value="Decisión" ${resultadoGuardado.metodo_real === 'Decisión' ? 'selected' : ''}>Decisión</option></select>`;
+            }
+            if (f.es_evento_principal) {
+                extraFields += `<br><label>Round Real:</label><input type="number" id="admin_round_${f.id}" min="1" max="${f.numero_de_rounds}" value="${resultadoGuardado.round_real || ''}">`;
+            }
+            container.innerHTML += `<div style="margin-bottom:15px; padding:10px; border:1px solid #ddd;"><strong>${f.nombre}</strong><br><label><input type="radio" name="admin_winner_${f.id}" value="${f.luchador1}" ${resultadoGuardado.ganador_real === f.luchador1 ? 'checked' : ''}/> ${f.luchador1}</label><label><input type="radio" name="admin_winner_${f.id}" value="${f.luchador2}" ${resultadoGuardado.ganador_real === f.luchador2 ? 'checked' : ''}/> ${f.luchador2}</label>${extraFields}</div>`;
+        });
     }
 
-    // ¡CAMBIO CLAVE! Mostramos el reporte completo que nos devuelve la base de datos.
-    alert("--- Reporte del Motor de Logros ---\n\n" + data);
-    console.log(data);
-}
+    async function guardarYProcesarResultados() {
+        const confirmacion = confirm("¿Estás seguro? Esta acción guardará los resultados y procesará los puntos y logros de forma definitiva para este evento.");
+        if (!confirmacion) return;
+
+        alert("Procesando... Por favor, espera.");
+
+        const resultsToUpsert = [];
+        if (peleasDelEvento.length === 0) {
+            const { data: peleas } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id);
+            peleasDelEvento = peleas || [];
+        }
+
+        for (const pelea of peleasDelEvento) {
+            const ganador = document.querySelector(`input[name='admin_winner_${pelea.id}']:checked`);
+            if (ganador) {
+                let metodo = document.getElementById(`admin_method_${pelea.id}`)?.value || null;
+                let round = document.getElementById(`admin_round_${pelea.id}`)?.value || null;
+                resultsToUpsert.push({ pelea_id: pelea.id, ganador_real: ganador.value, metodo_real: metodo, round_real: round });
+            }
+        }
+        
+        if (resultsToUpsert.length < peleasDelEvento.length) {
+            return alert("Error: Debes seleccionar un ganador para TODAS las peleas antes de procesar.");
+        }
+
+        const { error: saveError } = await supabaseClient.from('resultados').upsert(resultsToUpsert, { onConflict: 'pelea_id' });
+
+        if (saveError) {
+            console.error("Error al guardar resultados:", saveError);
+            return alert("Hubo un error al guardar los resultados: " + saveError.message);
+        }
+        
+        const { data, error: processError } = await supabaseClient.rpc('repartir_logros_evento', { 
+            evento_id_param: currentEvent.id 
+        });
+
+        if (processError) {
+            console.error("Error al procesar logros:", processError);
+            return alert("Resultados guardados, pero hubo un error al procesar los logros. Revisa la consola.");
+        }
+
+        alert("¡Proceso completado con éxito!\n\n--- Reporte del Motor de Logros ---\n\n" + data);
+        console.log(data);
+    }
 </script>
 
 </body>
