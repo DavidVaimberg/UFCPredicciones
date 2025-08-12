@@ -4,25 +4,140 @@
   <meta charset="UTF-8">
   <title>Historial de Predicciones</title>
 
-  <nav style="background:#111; padding:10px; text-align:center;">
-    <a href="index.html" style="color:white; margin:0 15px;">🏠 Inicio</a>
-    <a href="stats.html" style="color:white; margin:0 15px;">📊 Estadísticas</a>
-    <a href="perfil.html" style="color:white; margin:0 15px;">👤 Mi Perfil</a>
-  </nav>
+  <nav>
+    <a href="index.html">🏠 Inicio</a>
+    <a href="stats.html">📊 Estadísticas</a>
+    <a href="perfil.html">👤 Mi Perfil</a>
+</nav>
 
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
-    h1, h2 { text-align: center; }
-    .content { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-    select { font-size: 16px; padding: 10px; margin-bottom: 20px; width: 100%; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; word-wrap: break-word; }
-    th { background-color: #eee; }
-    .acierto { background-color: #d4edda; }
-    .fallo { background-color: #f8d7da; }
-    .user-block { margin-bottom: 30px; }
-    #historial-container { text-align: center; }
-  </style>
+ <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Roboto', sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            padding: 20px; 
+            margin: 0;
+        }
+
+        /* --- Estilos de Navegación COMPLETOS --- */
+        nav {
+            background: #111; 
+            padding: 15px 5px; 
+            text-align: center;
+            border-bottom: 2px solid #DAA520; 
+            display: flex;
+            justify-content: center; 
+            align-items: center;
+            margin: -20px -20px 20px -20px;
+        }
+        nav a {
+            font-family: 'Anton', sans-serif; 
+            color: white; 
+            margin: 0 15px;
+            text-decoration: none; 
+            font-size: 1.2em; 
+            letter-spacing: 1px;
+            transition: color 0.3s; 
+            flex-shrink: 0; 
+        }
+        nav a:hover { 
+            color: #DAA520; 
+        }
+        @media (max-width: 700px) {
+            nav { 
+                justify-content: space-around; 
+            }
+            nav a {
+    font-family: 'Anton', sans-serif; 
+    color: white; 
+    margin: 0 15px;
+    text-decoration: none; 
+    font-size: 1.5em; /* <-- MÁS GRANDE */
+    letter-spacing: 1px;
+    transition: color 0.3s; 
+    flex-shrink: 0; 
+}
+        }
+        /* --- Fin de Estilos de Navegación --- */
+
+        h1, h2 { 
+            text-align: center;
+            font-family: 'Anton', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #DAA520;
+        }
+        h1 { font-size: 3.75em; } /* <-- MÁS GRANDE */
+        h2 { font-size: 1.8em; text-align: center; }
+
+        .content { 
+            max-width: 1000px; 
+            margin: auto; 
+            background: #2b2b2b;
+            padding: 20px; 
+            border-radius: 10px;
+            border-top: 4px solid #DAA520;
+        }
+        select { 
+            font-size: 16px; 
+            padding: 10px; 
+            margin-bottom: 20px; 
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            table-layout: fixed;
+        }
+        th, td { 
+            border: 1px solid #444;
+            padding: 8px; 
+            text-align: center; 
+            word-wrap: break-word;
+            color: #f2f2f2; 
+        }
+        th { 
+            background-color: #1f1f1f;
+            color: #DAA520;
+            font-family: 'Anton', sans-serif;
+            letter-spacing: 1px;
+        }
+        .acierto { 
+            background-color: rgba(40, 167, 69, 0.2); 
+        }
+        .fallo { 
+            background-color: rgba(220, 53, 69, 0.2); 
+        }
+        tbody tr:hover { 
+            background-color: #3c3c3c; 
+        }
+        .user-block { 
+            margin-bottom: 30px; 
+        }
+        #historial-container { 
+            text-align: center; 
+        }
+        
+        .loader {
+            border: 6px solid #555;
+            border-top: 6px solid #DAA520;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+    </style>
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
