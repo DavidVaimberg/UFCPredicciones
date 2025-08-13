@@ -238,22 +238,39 @@
     }
 
     function calcularPuntos(prediccion, resultado, eventos) {
-        let puntos = 0;
-        const peleaInfo = prediccion.peleas;
-        if (!resultado || !peleaInfo) return 0;
-        const eventoDeLaPelea = eventos.find(e => e.id === peleaInfo.evento_id);
-        if (!eventoDeLaPelea) return 0;
-        if (resultado.ganador_real === prediccion.ganador_elegido) {
-            puntos += peleaInfo.tipo === 'Preliminar' ? 1 : 2;
-            if (peleaInfo.tipo === 'Main Card' && prediccion.metodo_elegido === resultado.metodo_real) {
-                puntos += 1;
-            }
-            if (peleaInfo.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
-                puntos += eventoDeLaPelea.puntos_extra_round;
-            }
+    let puntos = 0;
+    const peleaInfo = prediccion.peleas;
+    if (!resultado || !peleaInfo) return 0;
+    
+    // Buscamos el evento completo para obtener su multiplicador
+    const eventoDeLaPelea = eventos.find(e => e.id === peleaInfo.evento_id);
+    if (!eventoDeLaPelea) return 0;
+
+    // --- LÓGICA NUEVA ---
+    // Obtenemos el multiplicador del evento, si no existe, es 1 por defecto
+    const multiplicador = eventoDeLaPelea.multiplicador_puntos || 1;
+
+    if (resultado.ganador_real === prediccion.ganador_elegido) {
+        let puntosBase = 0;
+        if (peleaInfo.tipo === 'Preliminar') {
+            puntosBase = 1;
+        } else if (peleaInfo.tipo === 'Main Card') {
+            puntosBase = 2;
         }
-        return puntos;
+
+        // Aplicamos el multiplicador a los puntos base
+        puntos += puntosBase * multiplicador;
+        
+        // Los bonus de método y round no se multiplican, se suman al final
+        if (peleaInfo.tipo === 'Main Card' && prediccion.metodo_elegido === resultado.metodo_real) {
+            puntos += 1; // Bonus por método
+        }
+        if (peleaInfo.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
+            puntos += eventoDeLaPelea.puntos_extra_round; // Bonus por round
+        }
     }
+    return puntos;
+}
 </script>
 
 </body>
