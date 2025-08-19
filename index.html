@@ -450,49 +450,63 @@ async function renderFights() {
     });
 }
 
-    async function submitPredictions() {
-        const predictionsToInsert = [];
-        for (const pelea of peleasDelEvento) {
-            const ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
-            if (!ganadorSeleccionado) return alert(`Debes elegir un ganador para la pelea: "${pelea.nombre}"`);
-            let metodo = null, round = null;
-            if (pelea.tipo === 'Main Card') {
-                const metodoSelect = document.getElementById(`method_${pelea.id}`);
-                if (!metodoSelect.value) return alert(`Debes elegir un método para la pelea de Main Card: "${pelea.nombre}"`);
-                metodo = metodoSelect.value;
-            }
-            if (pelea.es_evento_principal) {
-                const roundSelect = document.getElementById(`round_${pelea.id}`);
-                if (!roundSelect.value) return alert(`Debes elegir un round para la pelea principal`);
-                round = roundSelect.value;
-            }
-            predictionsToInsert.push({ usuario_id: currentUser.id, pelea_id: pelea.id, ganador_elegido: ganadorSeleccionado.value, metodo_elegido: metodo, round_elegido: round });
-        }
+    // En tu archivo index.html, reemplaza esta función
+async function submitPredictions() {
+    const submitButton = document.getElementById('submit-btn');
+    // Paso 1: Deshabilitar el botón inmediatamente para evitar doble clic
+    submitButton.disabled = true;
+    submitButton.textContent = 'Enviando...';
 
-        const { error } = await supabaseClient.from('predicciones').insert(predictionsToInsert);
-        if (error) {
-            console.error('Error al guardar las predicciones:', error);
-            return alert(`Hubo un error al guardar: ${error.message}`);
+    const predictionsToInsert = [];
+    for (const pelea of peleasDelEvento) {
+        const ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
+        if (!ganadorSeleccionado) {
+            alert(`Debes elegir un ganador para la pelea: "${pelea.nombre}"`);
+            // Si hay un error, volvemos a habilitar el botón
+            submitButton.disabled = false;
+            submitButton.textContent = 'Enviar Predicciones';
+            return;
         }
-
-        alert('¡Predicciones guardadas con éxito!');
-        document.getElementById('fight-list').innerHTML = "<h2>¡Gracias! Tus predicciones han sido guardadas. ¡Mucha suerte!</h2>";
-        document.getElementById('submit-btn').classList.add('hidden');
-
-        try {
-            const { data: logro } = await supabaseClient.from('logros').select('id').eq('clave_unica', 'NOVATO_VALIENTE').single();
-            if (logro) {
-                await supabaseClient.from('logros_obtenidos').insert({
-                    usuario_id: currentUser.id,
-                    logro_id: logro.id,
-                    evento_id: currentEvent.id
-                });
-                console.log('Intento de dar logro "Novato Valiente" completado.');
+        let metodo = null, round = null;
+        if (pelea.tipo === 'Main Card') {
+            const metodoSelect = document.getElementById(`method_${pelea.id}`);
+            if (!metodoSelect.value) {
+                alert(`Debes elegir un método para la pelea de Main Card: "${pelea.nombre}"`);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Enviar Predicciones';
+                return;
             }
-        } catch (error) {
-            console.log('El usuario probablemente ya tiene el logro "Novato Valiente".');
+            metodo = metodoSelect.value;
         }
+        if (pelea.es_evento_principal) {
+            const roundSelect = document.getElementById(`round_${pelea.id}`);
+            if (!roundSelect.value) {
+                alert(`Debes elegir un round para la pelea principal`);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Enviar Predicciones';
+                return;
+            }
+            round = roundSelect.value;
+        }
+        predictionsToInsert.push({ usuario_id: currentUser.id, pelea_id: pelea.id, ganador_elegido: ganadorSeleccionado.value, metodo_elegido: metodo, round_elegido: round });
     }
+
+    const { error } = await supabaseClient.from('predicciones').insert(predictionsToInsert);
+
+    if (error) {
+        console.error('Error al guardar las predicciones:', error);
+        alert(`Hubo un error al guardar: ${error.message}`);
+        // Si Supabase da un error, también habilitamos el botón de nuevo
+        submitButton.disabled = false;
+        submitButton.textContent = 'Enviar Predicciones';
+        return;
+    }
+
+    alert('¡Predicciones guardadas con éxito!');
+    document.getElementById('fight-list').innerHTML = "<h2>¡Gracias! Tus predicciones han sido guardadas. ¡Mucha suerte!</h2>";
+    // El botón ya no es visible, así que no necesitamos hacer nada más con él
+    document.getElementById('submit-btn').classList.add('hidden');
+}
 
     async function renderAdminPanel() {
         const container = document.getElementById("admin-fight-list");
