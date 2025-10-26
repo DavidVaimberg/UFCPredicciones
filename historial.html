@@ -8,7 +8,7 @@
     <a href="index.html">🏠 Inicio</a>
     <a href="stats.html">📊 Estadísticas</a>
     <a href="perfil.html">👤 Mi Perfil</a>
-</nav>
+  </nav>
 
  <style>
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap');
@@ -30,7 +30,7 @@
             display: flex;
             justify-content: center; 
             align-items: center;
-            margin: -20px -20px 20px -20px;
+            margin: -20px -20px 20px -20px; /* Ajuste para que ocupe todo el ancho */
         }
         nav a {
             font-family: 'Anton', sans-serif; 
@@ -50,15 +50,11 @@
                 justify-content: space-around; 
             }
             nav a {
-    font-family: 'Anton', sans-serif; 
-    color: white; 
-    margin: 0 15px;
-    text-decoration: none; 
-    font-size: 1.5em; /* <-- MÁS GRANDE */
-    letter-spacing: 1px;
-    transition: color 0.3s; 
-    flex-shrink: 0; 
-}
+                /* El estilo duplicado aquí ha sido eliminado para mayor claridad */
+                font-size: 1em; /* Ajustado para móviles */
+                margin: 0 5px; /* Menor margen en móviles */
+                letter-spacing: normal; /* Espaciado normal en móviles */
+            }
         }
         /* --- Fin de Estilos de Navegación --- */
 
@@ -69,7 +65,7 @@
             letter-spacing: 1.5px;
             color: #DAA520;
         }
-        h1 { font-size: 3.75em; } /* <-- MÁS GRANDE */
+        h1 { font-size: 3.75em; } 
         h2 { font-size: 1.8em; text-align: center; }
 
         .content { 
@@ -88,6 +84,7 @@
             background-color: #333;
             color: #fff;
             border: 1px solid #555;
+            box-sizing: border-box; /* Añadido para consistencia */
         }
         table { 
             width: 100%; 
@@ -124,6 +121,7 @@
             text-align: center; 
         }
         
+        /* Estilo para el loader (si lo quieres añadir) */
         .loader {
             border: 6px solid #555;
             border-top: 6px solid #DAA520;
@@ -195,29 +193,18 @@
             return;
         }
 
-        container.innerHTML = '<p>Cargando historial...</p>';
+        // Puedes añadir aquí el loader si quieres
+        container.innerHTML = '<div class="loader"></div><p>Cargando historial...</p>'; 
 
-        const { data: peleas, error: peleasError } = await supabaseClient
-            .from('peleas')
-            .select('id')
-            .eq('evento_id', eventoId);
-        
-        if (peleasError || peleas.length === 0) {
+        const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', eventoId);
+        if (peleasError || !peleas || peleas.length === 0) {
             container.innerHTML = '<p>No se encontraron peleas para este evento.</p>';
             return console.error("Error o no hay peleas:", peleasError);
         }
-        
         const peleaIDs = peleas.map(p => p.id);
 
-        const { data: predicciones, error: predError } = await supabaseClient
-            .from('predicciones')
-            .select(`*, peleas(nombre), profiles(username)`)
-            .in('pelea_id', peleaIDs);
-
-        const { data: resultados, error: resError } = await supabaseClient
-            .from('resultados')
-            .select(`*, peleas(nombre)`)
-            .in('pelea_id', peleaIDs);
+        const { data: predicciones, error: predError } = await supabaseClient.from('predicciones').select(`*, peleas(nombre), profiles(username)`).in('pelea_id', peleaIDs);
+        const { data: resultados, error: resError } = await supabaseClient.from('resultados').select(`*, peleas(nombre)`).in('pelea_id', peleaIDs);
 
         if (predError || resError) {
             container.innerHTML = '<p>Error al cargar el historial.</p>';
@@ -229,10 +216,7 @@
             const userId = pred.usuario_id;
             const username = pred.profiles ? pred.profiles.username : 'Usuario Desconocido';
             if (!prediccionesPorUsuario[userId]) {
-                prediccionesPorUsuario[userId] = {
-                    username: username,
-                    predicciones: []
-                };
+                prediccionesPorUsuario[userId] = { username: username, predicciones: [] };
             }
             prediccionesPorUsuario[userId].predicciones.push(pred);
         }
@@ -248,25 +232,43 @@
                             </thead>
                             <tbody>`;
             
+            // --- INICIO DE LA LÓGICA CORREGIDA PARA MOSTRAR RESULTADOS ---
             userData.predicciones.sort((a,b) => a.pelea_id - b.pelea_id).forEach(p => {
                 const res = resultados.find(r => r.pelea_id === p.pelea_id);
                 const acierto = res && res.ganador_real === p.ganador_elegido;
+                let resultadoTexto = 'N/A';
+                let ganadorRealTexto = 'N/A';
+
+                if (res) {
+                    ganadorRealTexto = res.ganador_real; // Guardamos el valor original
+                    if (res.ganador_real === 'Draw') {
+                        resultadoTexto = 'Empate';
+                        ganadorRealTexto = 'Empate'; // Mostramos Empate también como "Ganador"
+                    } else if (res.ganador_real === 'NC') {
+                        resultadoTexto = 'No Contest';
+                        ganadorRealTexto = 'NC'; // Mostramos NC también como "Ganador"
+                    } else {
+                        // Si hubo un ganador, construimos el texto del resultado
+                        resultadoTexto = (res.metodo_real || '') + (res.round_real ? ' R' + res.round_real : '');
+                         // Aseguramos que el texto no esté vacío si no hay método ni round
+                        if (!resultadoTexto.trim()) resultadoTexto = 'N/A';
+                    }
+                }
 
                 html += `<tr class="${acierto ? 'acierto' : 'fallo'}">
-                            <td>${p.peleas.nombre}</td>
+                            <td>${p.peleas ? p.peleas.nombre : 'Pelea Desconocida'}</td>
                             <td>${p.ganador_elegido}</td>
                             <td>${p.metodo_elegido || '-'}</td>
                             <td>${p.round_elegido || '-'}</td>
-                            <td>${res ? res.ganador_real : 'N/A'}</td>
-                            <td>${res ? (res.metodo_real || 'N/A') + (res.round_real ? ' R' + res.round_real : '') : 'N/A'}</td>
-                            <td>${acierto ? '✅' : '❌'}</td>
+                            <td>${ganadorRealTexto}</td> <td>${resultadoTexto}</td> <td>${acierto ? '✅' : '❌'}</td>
                          </tr>`;
             });
+            // --- FIN DE LA LÓGICA CORREGIDA ---
 
             html += `</tbody></table></div>`;
         }
 
-        container.innerHTML = html || '<p>No hay predicciones para este evento.</p>';
+        container.innerHTML = html || '<p>No hay predicciones registradas para este evento.</p>';
     }
 </script>
 
