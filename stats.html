@@ -191,6 +191,7 @@
     </div>
 
 <script>
+
     const SUPABASE_URL = 'https://dvpckpkgiwicifweiupo.supabase.co';
 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
@@ -201,113 +202,376 @@
 
     let currentUser = null; 
 
+
+
     document.addEventListener('DOMContentLoaded', async () => {
+
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-            window.location.href = 'index.html';
-            return;
-        }
-        cargarEstadisticas();
+
+        if (!session) { window.location.href = 'index.html'; return; }
+
+        currentUser = session.user;
+
+        
+
+        await Promise.all([
+
+            cargarFiltroEventos(),
+
+            cargarEstadisticas(currentUser, null)
+
+        ]);
+
+        
+
+        document.getElementById('loading-message').style.display = 'none';
+
+        document.getElementById('main-content').style.display = 'block';
+
     });
 
-    async function cargarEstadisticas() {
-        console.log("Paso 1: Obteniendo datos...");
 
-        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-        // Se añaden los !left para forzar un LEFT JOIN y que no se descarte ninguna predicción.
-        const { data: predicciones, error: predError } = await supabaseClient
-            .from('predicciones')
-            .select(`*, peleas!left(*, eventos!left(*)), profiles!left(username)`);
+
+    async function cargarFiltroEventos() {
+
+        const selector = document.getElementById('event-filter-select');
+
+        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').eq('esta_activo', false).order('id', { ascending: false });
+
+        if (error) { selector.innerHTML = '<option>Error al cargar eventos</option>'; return; }
+
         
+
+        let optionsHTML = '<option value="global">Estadísticas Globales (Todas)</option>';
+
+        eventos.forEach(evento => { optionsHTML += `<option value="${evento.id}">${evento.nombre}</option>`; });
+
+        selector.innerHTML = optionsHTML;
+
+        
+
+        selector.addEventListener('change', (e) => {
+
+            const eventoId = e.target.value === 'global' ? null : parseInt(e.target.value);
+
+            cargarEstadisticas(currentUser, eventoId);
+
+        });
+
+    }
+
+
+
+    async function cargarEstadisticas(currentUser, eventoId = null) {
+
+        document.getElementById('stats-content').style.display = 'none';
+
+        const honorBox = document.querySelector('.accolades-grid').closest('.table-box');
+
+        honorBox.style.display = 'none';
+
+        
+
+        let query = supabaseClient.from('predicciones').select(`*, peleas!inner(*), profiles(username)`);
+
+        if (eventoId) { query = query.filter('peleas.evento_id', 'eq', eventoId); }
+
+        
+
+        const { data: predicciones, error: predError } = await query;
+
         const { data: resultados, error: resError } = await supabaseClient.from('resultados').select(`*`);
+
         const { data: eventos, error: eveError } = await supabaseClient.from('eventos').select('*');
 
-        if (predError || resError || eveError) {
-            console.error("Error obteniendo datos:", predError || resError || eveError);
-            document.getElementById('loading-message').innerText = "Error al cargar los datos. Revisa la consola.";
-            return;
-        }
+        
 
-        console.log("Paso 2: Calculando puntos...");
+        if (predError || resError || eveError) return console.error(predError || resError || eveError);
+
+        
+
         const stats = {};
+
         for (const pred of predicciones) {
-            // Comprobación de seguridad: si una predicción quedó huérfana de perfil, se omite.
-            if (!pred.profiles) continue; 
-            
+
             const userId = pred.usuario_id;
-            const username = pred.profiles.username;
-            
+
+            if (!userId) continue;
+
+            const username = pred.profiles ? pred.profiles.username : 'Usuario Desconocido';
+
             if (!stats[userId]) {
-                stats[userId] = { username: username, puntos: 0, aciertos: 0, total: 0 };
+
+                stats[userId] = { 
+
+                    username: username, puntos: 0, aciertos: 0, total: 0, 
+
+                    ko_wins: 0, sub_wins: 0, decision_wins: 0, 
+
+                    main_card_wins: 0, prelim_wins: 0 
+
+                };
+
             }
+
             stats[userId].total++;
-            
+
             const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
+
             if (resultadoReal) {
+
                 const puntosGanados = calcularPuntos(pred, resultadoReal, eventos);
-                if (puntosGanados > 0) stats[userId].aciertos++;
+
                 stats[userId].puntos += puntosGanados;
+
+
+
+                if (resultadoReal.ganador_real === pred.ganador_elegido) {
+
+                    stats[userId].aciertos++;
+
+                    if (pred.peleas.tipo === 'Main Card') stats[userId].main_card_wins++;
+
+                    else if (pred.peleas.tipo === 'Preliminar') stats[userId].prelim_wins++;
+
+
+
+                    if (pred.metodo_elegido && pred.metodo_elegido === resultadoReal.metodo_real) {
+
+                        if (resultadoReal.metodo_real === 'KO') stats[userId].ko_wins++;
+
+                        else if (resultadoReal.metodo_real === 'Submisión') stats[userId].sub_wins++;
+
+                        else if (resultadoReal.metodo_real === 'Decisión') stats[userId].decision_wins++;
+
+                    }
+
+                }
+
             }
+
         }
+
         
-        console.log("Paso 3: Mostrando resultados...");
-        // (El resto de la función para mostrar las tablas no cambia)
+
         const statsArray = Object.values(stats);
-        statsArray.sort((a, b) => b.puntos - a.puntos);
-        const puntosBody = document.querySelector("#tabla-puntos tbody");
-        puntosBody.innerHTML = '';
-        statsArray.forEach((s, index) => {
-            puntosBody.innerHTML += `<tr><td>${index + 1}</td><td>${s.username}</td><td>${s.puntos}</td></tr>`;
-        });
-        statsArray.sort((a, b) => b.aciertos - a.aciertos);
-        const aciertosBody = document.querySelector("#tabla-aciertos tbody");
-        aciertosBody.innerHTML = '';
-        statsArray.forEach((s, index) => {
-            aciertosBody.innerHTML += `<tr><td>${index + 1}</td><td>${s.username}</td><td>${s.aciertos}</td><td>${s.total}</td></tr>`;
-        });
+
         statsArray.forEach(s => s.porcentaje = s.total > 0 ? ((s.aciertos / s.total) * 100) : 0);
-        statsArray.sort((a, b) => b.porcentaje - a.porcentaje);
-        const porcentajeBody = document.querySelector("#tabla-porcentaje tbody");
-        porcentajeBody.innerHTML = '';
-        statsArray.forEach((s, index) => {
-            porcentajeBody.innerHTML += `<tr><td>${index + 1}</td><td>${s.username}</td><td>${s.porcentaje.toFixed(1)}%</td></tr>`;
-        });
-        document.getElementById('loading-message').style.display = 'none';
-        document.getElementById('stats-content').style.display = 'block';
-    }
 
-    // Función de cálculo de puntos (ya está correcta y maneja la lógica de multiplicadores)
-    function calcularPuntos(prediccion, resultado, eventos) {
-        let puntos = 0;
-        const peleaInfo = prediccion.peleas;
-        
-        // Comprobación de seguridad para datos rotos
-        if (!resultado || !peleaInfo) return 0;
-        
-        const eventoDeLaPelea = eventos.find(e => e.id === peleaInfo.evento_id);
-        
-        // Comprobación de seguridad para datos rotos
-        if (!eventoDeLaPelea) return 0; 
+        let currentUsername = currentUser?.user_metadata?.username || null;
 
-        if (resultado.ganador_real === prediccion.ganador_elegido) {
-            const multiplicador = eventoDeLaPelea.multiplicador_puntos || 1;
+        
+
+        if (eventoId) {
+
+            honorBox.style.display = 'none';
+
+        } else {
+
+            honorBox.style.display = 'block';
+
             
-            if (peleaInfo.tipo === 'Preliminar') {
-                puntos += (1 * multiplicador);
-            } else if (peleaInfo.tipo === 'Main Card') {
-                puntos += (2 * multiplicador);
-                if (prediccion.metodo_elegido && resultado.metodo_real && prediccion.metodo_elegido === resultado.metodo_real) {
-                    puntos += 1;
-                }
-            }
-            if (peleaInfo.es_evento_principal) {
-                if (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión')) {
-                    puntos += eventoDeLaPelea.puntos_extra_round;
-                }
-            }
+
+            // Calculamos el MVP de la Liga por separado, solo en la vista global
+
+            calcularLiderMVP(predicciones, resultados, eventos);
+
+
+
+            const findLeaders = (key) => {
+
+                if (statsArray.length === 0) return 'N/A';
+
+                const maxValue = Math.max(...statsArray.map(s => s[key]));
+
+                if (maxValue === 0) return 'N/A';
+
+                const leaders = statsArray.filter(s => s[key] === maxValue);
+
+                return leaders.map(l => l.username).join(', ');
+
+            };
+
+            
+
+            document.getElementById('leader-maincard').textContent = findLeaders('main_card_wins');
+
+            document.getElementById('leader-prelims').textContent = findLeaders('prelim_wins');
+
+            document.getElementById('leader-ko').textContent = findLeaders('ko_wins');
+
+            document.getElementById('leader-sumision').textContent = findLeaders('sub_wins');
+
+            document.getElementById('leader-decision').textContent = findLeaders('decision_wins');
+
         }
-        return puntos;
+
+        
+
+        statsArray.sort((a, b) => b.puntos - a.puntos);
+
+        document.querySelector("#tabla-puntos tbody").innerHTML = statsArray.map((s, index) => `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}"><td>${index + 1}</td><td>${s.username}</td><td>${s.puntos}</td></tr>`).join('');
+
+        
+
+        statsArray.sort((a, b) => b.aciertos - a.aciertos);
+
+        document.querySelector("#tabla-aciertos tbody").innerHTML = statsArray.map((s, index) => `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}"><td>${index + 1}</td><td>${s.username}</td><td>${s.aciertos}</td><td>${s.total}</td><td>${s.porcentaje.toFixed(1)}%</td></tr>`).join('');
+
+        
+
+        document.getElementById('stats-content').style.display = 'block';
+
     }
+
+
+
+    async function calcularLiderMVP(predicciones, resultados, todosEventos) {
+
+        const { data: eventos, error: eveError } = await supabaseClient.from('eventos').select('id').eq('esta_activo', false);
+
+        if (eveError) return;
+
+        const mvpCounts = {};
+
+        for (const evento of eventos) {
+
+            const prediccionesDelEvento = predicciones.filter(p => p.peleas.evento_id === evento.id);
+
+            const puntuaciones = {};
+
+            for (const pred of prediccionesDelEvento) {
+
+                const userId = pred.usuario_id;
+
+                if (!userId) continue;
+
+                const username = pred.profiles ? pred.profiles.username : 'Usuario Desconocido';
+
+                if (!puntuaciones[userId]) puntuaciones[userId] = { username: username, puntos: 0 };
+
+                const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
+
+                if (resultadoReal) {
+
+                    puntuaciones[userId].puntos += calcularPuntos(pred, resultadoReal, todosEventos);
+
+                }
+
+            }
+
+            const puntuacionesArray = Object.values(puntuaciones);
+
+            if (puntuacionesArray.length > 0) {
+
+                const maxPuntos = Math.max(...puntuacionesArray.map(p => p.puntos));
+
+                if (maxPuntos > 0) {
+
+                    const ganadores = puntuacionesArray.filter(p => p.puntos === maxPuntos);
+
+                    ganadores.forEach(ganador => {
+
+                        if (!mvpCounts[ganador.username]) mvpCounts[ganador.username] = 0;
+
+                        mvpCounts[ganador.username]++;
+
+                    });
+
+                }
+
+            }
+
+        }
+
+        const mvpArray = Object.entries(mvpCounts);
+
+        if (mvpArray.length > 0) {
+
+            const maxMvps = Math.max(...mvpArray.map(([, count]) => count));
+
+            const mvpLeaders = mvpArray.filter(([, count]) => count === maxMvps).map(([username]) => username);
+
+            document.getElementById('leader-mvp').textContent = mvpLeaders.join(', ');
+
+        } else {
+
+            document.getElementById('leader-mvp').textContent = 'N/A';
+
+        }
+
+    }
+
+
+
+    function calcularPuntos(prediccion, resultado, eventos) {
+
+    let puntos = 0;
+
+    const peleaInfo = prediccion.peleas;
+
+    if (!resultado || !peleaInfo) return 0;
+
+    
+
+    // Buscamos el evento completo para obtener su multiplicador
+
+    const eventoDeLaPelea = eventos.find(e => e.id === peleaInfo.evento_id);
+
+    if (!eventoDeLaPelea) return 0;
+
+
+
+    // --- LÓGICA NUEVA ---
+
+    // Obtenemos el multiplicador del evento, si no existe, es 1 por defecto
+
+    const multiplicador = eventoDeLaPelea.multiplicador_puntos || 1;
+
+
+
+    if (resultado.ganador_real === prediccion.ganador_elegido) {
+
+        let puntosBase = 0;
+
+        if (peleaInfo.tipo === 'Preliminar') {
+
+            puntosBase = 1;
+
+        } else if (peleaInfo.tipo === 'Main Card') {
+
+            puntosBase = 2;
+
+        }
+
+
+
+        // Aplicamos el multiplicador a los puntos base
+
+        puntos += puntosBase * multiplicador;
+
+        
+
+        // Los bonus de método y round no se multiplican, se suman al final
+
+        if (peleaInfo.tipo === 'Main Card' && prediccion.metodo_elegido === resultado.metodo_real) {
+
+            puntos += 1; // Bonus por método
+
+        }
+
+        if (peleaInfo.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
+
+            puntos += eventoDeLaPelea.puntos_extra_round; // Bonus por round
+
+        }
+
+    }
+
+    return puntos;
+
+}
+
 </script>
 
 </body>
