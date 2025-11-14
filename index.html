@@ -246,6 +246,9 @@
                 <label for="event-selector">Selecciona evento:</label>
                 <select id="event-selector"></select>
                 <button onclick="login()">Entrar</button>
+                <p style="text-align:center; margin-top:10px;">
+    <a href="#" onclick="toggleForgotForm()" style="color:#ccc; font-size:0.9em;">Vergo bobo que olvido la contraseña</a>
+</p>
                 <p>¿No tienes cuenta? <a href="#" onclick="toggleAuthForms()">Regístrate</a></p>
             </div>
             <div id="register-form" class="hidden">
@@ -261,6 +264,24 @@
             </div>
         </div>
     </div>
+
+    <div id="forgot-form" class="hidden">
+    <h2>Recuperar Cuenta</h2>
+    <p style="text-align:center; color:#ccc; font-size:0.9em; margin-bottom:15px;">Ingresa tu email y te enviaremos un enlace.</p>
+    <label for="forgot-email">Email:</label>
+    <input type="email" id="forgot-email" placeholder="tu@email.com">
+    <button onclick="sendRecoveryEmail()">Enviar Enlace</button>
+    <p style="text-align:center; margin-top:15px;">
+        <a href="#" onclick="toggleForgotForm()" style="color:#DAA520;">Volver al inicio de sesión</a>
+    </p>
+</div>
+
+<div id="update-password-form" class="hidden">
+    <h2>Nueva Contraseña</h2>
+    <label for="new-password">Nueva Contraseña:</label>
+    <input type="password" id="new-password">
+    <button onclick="updateUserPassword()">Guardar Nueva Contraseña</button>
+</div>
 
     <div class="section hidden" id="prediction-section">
         <div class="panel-box">
@@ -297,16 +318,27 @@
     let peleasDelEvento = []; // Caché global
 
     document.addEventListener('DOMContentLoaded', async () => {
-        await loadActiveEvents();
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
+    await loadActiveEvents(); // Tu función de cargar eventos
+
+    // Escuchamos cambios en la sesión (Login, Logout, y RECUPERACIÓN)
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+            // Si el usuario viene del correo de recuperación, mostramos el formulario de cambio
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('forgot-form').classList.add('hidden');
+            document.getElementById('update-password-form').classList.remove('hidden');
+        } else if (session) {
+            // Si hay sesión normal (o acaba de cambiar la clave)
             currentUser = session.user;
             const eventSelector = document.getElementById('event-selector');
+            // Si hay un evento seleccionado, mostramos la pantalla de predicción
             if (eventSelector.value && eventSelector.value !== "No hay eventos activos") {
                 await showPredictionScreen();
             }
         }
     });
+});
 
     function toggleAuthForms() {
         document.getElementById('login-form').classList.toggle('hidden');
@@ -333,6 +365,40 @@
         alert('¡Registro exitoso! Ya puedes iniciar sesión.');
         toggleAuthForms();
     }
+
+    function toggleForgotForm() {
+    document.getElementById('login-form').classList.toggle('hidden');
+    document.getElementById('forgot-form').classList.toggle('hidden');
+}
+
+async function sendRecoveryEmail() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) return alert('Por favor, ingresa tu email.');
+
+    // Supabase envía el correo
+    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href, // Vuelve a esta misma página
+    });
+
+    if (error) return alert('Error: ' + error.message);
+    alert('Correo enviado. Revisa tu bandeja de entrada (y spam).');
+    toggleForgotForm(); // Volvemos a mostrar el login
+}
+
+async function updateUserPassword() {
+    const newPassword = document.getElementById('new-password').value.trim();
+    if (!newPassword) return alert('Ingresa una contraseña válida.');
+
+    // Actualizamos el usuario con la nueva clave
+    const { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
+
+    if (error) return alert('Error al actualizar: ' + error.message);
+    
+    alert('¡Contraseña actualizada! Ya estás conectado.');
+    // Ocultamos el formulario y mostramos la app normal
+    document.getElementById('update-password-form').classList.add('hidden');
+    // La sesión se actualiza sola, el listener lo detectará
+}
 
     async function login() {
         const email = document.getElementById('login-email').value;
