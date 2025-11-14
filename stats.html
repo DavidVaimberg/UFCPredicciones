@@ -202,6 +202,33 @@
         document.getElementById('main-content').style.display = 'block';
     });
 
+    // --- FUNCIÓN MÁGICA PARA OBTENER TODO (LOOP INFINITO HASTA TERMINAR) ---
+    async function fetchAll(tableName) {
+        let allData = [];
+        let from = 0;
+        const step = 1000; // Pedimos de 1000 en 1000
+        let more = true;
+
+        while (more) {
+            const { data, error } = await supabaseClient
+                .from(tableName)
+                .select('*')
+                .range(from, from + step - 1);
+
+            if (error) throw error;
+
+            if (data.length > 0) {
+                allData = allData.concat(data);
+                from += step;
+                // Si recibimos menos de 1000, es que ya llegamos al final
+                if (data.length < step) more = false;
+            } else {
+                more = false;
+            }
+        }
+        return { data: allData, error: null };
+    }
+
     async function cargarFiltroEventos() {
         const selector = document.getElementById('event-filter-select');
         const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').eq('esta_activo', false).order('id', { ascending: false });
@@ -222,15 +249,14 @@
         const honorBox = document.getElementById('honor-box');
         if (eventoId) { honorBox.style.display = 'none'; } else { honorBox.style.display = 'block'; }
         
-        // --- SOLUCIÓN CORREGIDA: Rango SOLO en tablas grandes ---
-        // Usamos range(0, 2000) que es seguro para predicciones y resultados.
-        // NO usamos range en eventos o profiles porque son pequeños y da error.
+        // --- AQUÍ ESTÁ LA SOLUCIÓN DEFINITIVA: fetchAll ---
+        // Usamos la función de bucle para traer TODO, sin importar el límite de 1000
         const [predsRes, resRes, peleasRes, eventosRes, profilesRes] = await Promise.all([
-            supabaseClient.from('predicciones').select('*').range(0, 2000), 
-            supabaseClient.from('resultados').select('*').range(0, 2000),
-            supabaseClient.from('peleas').select('*').range(0, 2000),
-            supabaseClient.from('eventos').select('*'), // Sin rango
-            supabaseClient.from('profiles').select('*')  // Sin rango
+            fetchAll('predicciones'), 
+            fetchAll('resultados'),
+            fetchAll('peleas'),
+            supabaseClient.from('eventos').select('*'), // Eventos son pocos, no necesita fetchAll
+            supabaseClient.from('profiles').select('*')  // Perfiles son pocos, no necesita fetchAll
         ]);
 
         const predicciones = predsRes.data;
@@ -240,12 +266,12 @@
         const profiles = profilesRes.data;
 
         if (predsRes.error || resRes.error || peleasRes.error || eventosRes.error || profilesRes.error) {
-            console.error("Error cargando datos:", predsRes.error, resRes.error, peleasRes.error, eventosRes.error, profilesRes.error);
+            console.error("Error cargando datos.");
             return;
         }
 
-        // --- DIAGNÓSTICO EN CONSOLA ---
-        console.log("Predicciones cargadas con éxito:", predicciones.length);
+        // --- DIAGNÓSTICO ---
+        console.log("¡ÉXITO! Total real de predicciones descargadas:", predicciones.length);
 
         // Enriquecemos las predicciones manualmente
         const prediccionesEnriquecidas = predicciones.map(p => {
@@ -302,7 +328,6 @@
         }
         
         let statsArray = Object.values(stats);
-        // Ocultar usuarios sin participación en la vista de evento específico, pero mostrarlos en global si tienen historial
         if (eventoId) {
              statsArray = statsArray.filter(s => s.total > 0);
         } else {
