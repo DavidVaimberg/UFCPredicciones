@@ -202,7 +202,6 @@
         document.getElementById('main-content').style.display = 'block';
     });
 
-    // --- ESTA ES LA FUNCIÓN QUE FALTABA ---
     async function cargarFiltroEventos() {
         const selector = document.getElementById('event-filter-select');
         const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').eq('esta_activo', false).order('id', { ascending: false });
@@ -223,13 +222,15 @@
         const honorBox = document.getElementById('honor-box');
         if (eventoId) { honorBox.style.display = 'none'; } else { honorBox.style.display = 'block'; }
         
-        // --- AQUÍ ESTÁ EL CAMBIO CRÍTICO: .range(0, 9999) PARA TRAER TODOS LOS DATOS ---
+        // --- SOLUCIÓN CORREGIDA: Rango SOLO en tablas grandes ---
+        // Usamos range(0, 2000) que es seguro para predicciones y resultados.
+        // NO usamos range en eventos o profiles porque son pequeños y da error.
         const [predsRes, resRes, peleasRes, eventosRes, profilesRes] = await Promise.all([
-            supabaseClient.from('predicciones').select('*').range(0, 9999), 
-            supabaseClient.from('resultados').select('*').range(0, 9999),
-            supabaseClient.from('peleas').select('*').range(0, 9999),
-            supabaseClient.from('eventos').select('*'),
-            supabaseClient.from('profiles').select('*')
+            supabaseClient.from('predicciones').select('*').range(0, 2000), 
+            supabaseClient.from('resultados').select('*').range(0, 2000),
+            supabaseClient.from('peleas').select('*').range(0, 2000),
+            supabaseClient.from('eventos').select('*'), // Sin rango
+            supabaseClient.from('profiles').select('*')  // Sin rango
         ]);
 
         const predicciones = predsRes.data;
@@ -239,12 +240,12 @@
         const profiles = profilesRes.data;
 
         if (predsRes.error || resRes.error || peleasRes.error || eventosRes.error || profilesRes.error) {
-            console.error("Error cargando datos.");
+            console.error("Error cargando datos:", predsRes.error, resRes.error, peleasRes.error, eventosRes.error, profilesRes.error);
             return;
         }
 
-        // --- DIAGNÓSTICO ---
-        console.log("Total de predicciones descargadas:", predicciones.length);
+        // --- DIAGNÓSTICO EN CONSOLA ---
+        console.log("Predicciones cargadas con éxito:", predicciones.length);
 
         // Enriquecemos las predicciones manualmente
         const prediccionesEnriquecidas = predicciones.map(p => {
@@ -301,6 +302,7 @@
         }
         
         let statsArray = Object.values(stats);
+        // Ocultar usuarios sin participación en la vista de evento específico, pero mostrarlos en global si tienen historial
         if (eventoId) {
              statsArray = statsArray.filter(s => s.total > 0);
         } else {
