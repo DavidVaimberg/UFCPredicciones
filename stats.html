@@ -4,434 +4,401 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estadísticas Globales UFC</title>
-
+ 
     <nav>
         <a href="index.html">🏠 Inicio</a>
         <a href="historial.html">📁 Historial</a>
         <a href="perfil.html">👤 Mi Perfil</a>
     </nav>
-
+ 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap');
         
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #1a1a1a;
+           font-family: 'Roboto', sans-serif;
+           background-color: #1a1a1a;
             color: #f2f2f2;
             margin: 0;
-            padding-bottom: 40px; /* Espacio extra al final */
         }
-
-        /* --- Estilos de Navegación --- */
+ 
+        /* Estilos de Navegación */
         nav {
-            background: #111; 
-            padding: 15px 5px; 
-            text-align: center;
-            border-bottom: 2px solid #DAA520; 
-            display: flex;
-            justify-content: center; 
-            align-items: center;
-            margin-bottom: 30px;
+            background: #111; padding: 15px 5px; text-align: center;
+           border-bottom: 2px solid #DAA520; display: flex;
+           justify-content: center; align-items: center;
         }
         nav a {
-            font-family: 'Anton', sans-serif; 
-            color: white; 
-            margin: 0 15px;
-            text-decoration: none; 
-            font-size: 1.2em; 
-            letter-spacing: 1px;
-            transition: color 0.3s; 
-            flex-shrink: 0; 
+           font-family: 'Anton', sans-serif; color: white; margin: 0 15px;
+           text-decoration: none; font-size: 1.2em; letter-spacing: 1px;
+           transition: color 0.3s; flex-shrink: 0; 
         }
         nav a:hover { color: #DAA520; }
-        
         @media (max-width: 700px) {
             nav { justify-content: space-around; }
             nav a { font-size: 1em; margin: 0 5px; letter-spacing: normal; }
         }
-
-        /* --- Títulos y Contenedores --- */
+ 
+        /* Estilos de Títulos y Contenedores */
         h1, h2 {
-            font-family: 'Anton', sans-serif; 
-            text-transform: uppercase;
-            letter-spacing: 1.5px; 
-            text-align: center; 
-            color: #DAA520;
+           font-family: 'Anton', sans-serif; text-transform: uppercase;
+           letter-spacing: 1.5px; text-align: center; color: #DAA520;
         }
         h1 { font-size: 3em; margin: 20px 0 40px 0; }
-        h2 { font-size: 2em; margin-bottom: 20px; }
-
+        h2 { font-size: 2em; }
+ 
         .table-box {
-            background: #2b2b2b; 
-            padding: 25px; 
-            margin: 20px auto 40px auto;
-            border-radius: 8px; 
-            border: 1px solid #444; 
-            border-top: 4px solid #DAA520;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3); 
-            max-width: 800px;
-            width: 90%; /* Para que se ajuste en móviles */
+           background: #2b2b2b; padding: 25px; margin: 20px auto 40px auto;
+           border-radius: 8px; border: 1px solid #444; border-top: 4px solid #DAA520;
+           box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-width: 800px;
         }
-
-        /* --- Cuadro de Honor --- */
+ 
+        /* Estilos para el Cuadro de Honor */
         .accolades-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
         .accolade-item {
-            background-color: #1f1f1f; 
-            padding: 15px;
-            border-radius: 8px; 
-            text-align: center; 
-            border: 1px solid #444;
-            transition: transform 0.3s ease;
+           background-color: #1f1f1f; padding: 15px;
+           border-radius: 8px; text-align: center; border: 1px solid #444;
         }
-        .accolade-item:hover { transform: translateY(-5px); }
-        .accolade-item .icon { font-size: 2.5em; display: block; margin-bottom: 10px; }
-        .accolade-item .title { font-weight: bold; color: #ccc; font-size: 0.9em; display: block; margin-bottom: 5px; text-transform: uppercase; }
-        .accolade-item .winner { font-family: 'Anton', sans-serif; font-size: 1.2em; color: #fff; letter-spacing: 1px; min-height: 25px; }
-
-        /* --- Filtro --- */
-        .event-filter-container { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        .event-filter-container label { font-weight: bold; color: #DAA520; }
-        #event-filter-select {
-            background-color: #333; color: #fff; border: 1px solid #555;
-            border-radius: 5px; padding: 10px; font-size: 1em; width: 100%; max-width: 400px;
+        .accolade-item .icon { font-size: 2em; }
+        .accolade-item .title { font-weight: bold; color: #ccc; margin-top: 5px; display: block; }
+        .accolade-item .winner { font-family: 'Anton', sans-serif; font-size: 1.4em; color: #fff; letter-spacing: 1px; min-height: 30px;}
+ 
+        /* Estilos para el Filtro de Eventos */
+        .event-filter-container { display: flex; flex-direction: column; gap: 10px; }
+       .event-filter-container label { font-weight: bold; text-align: center; }
+       #event-filter-select {
+           background-color: #333; color: #fff; border: 1px solid #555;
+           border-radius: 5px; padding: 12px; font-size: 1em;
         }
-
-        /* --- Tablas --- */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+ 
+        /* Estilos de Tabla Oscura */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td {
-            border: none; 
-            border-bottom: 1px solid #444;
-            padding: 15px; 
-            text-align: center;
+            border: none; border-bottom: 1px solid #444;
+            padding: 15px; text-align: center;
         }
+       td:first-child, th:first-child { text-align: left; padding-left: 20px; }
+       td:nth-child(2), th:nth-child(2) { text-align: left; }
         th {
-            font-family: 'Anton', sans-serif; 
-            color: #DAA520; 
-            font-size: 1.1em;
-            letter-spacing: 1px; 
-            background-color: #222;
+           font-family: 'Anton', sans-serif; color: #DAA520; font-size: 1.2em;
+           letter-spacing: 1px; border-bottom: 2px solid #DAA520;
         }
-        td:first-child, th:first-child { text-align: center; font-weight: bold; color: #888; }
-        td:nth-child(2), th:nth-child(2) { text-align: left; font-weight: bold; color: #fff; }
-        tbody tr:hover { background-color: #383838; }
-        
-        /* Resaltar usuario actual */
-        .fila-usuario-actual { background-color: rgba(218, 165, 32, 0.15) !important; border-left: 4px solid #DAA520; }
-
-        /* --- Loader --- */
+        tbody tr:hover { background-color: #3c3c3c; }
+ 
+        /* Indicador de Carga (Spinner) */
         .loader {
-            border: 6px solid #333; border-top: 6px solid #DAA520;
-            border-radius: 50%; width: 50px; height: 50px;
-            animation: spin 1s linear infinite; margin: 60px auto;
+            border: 6px solid #f3f3f3; border-top: 6px solid #DAA520;
+           border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; margin: 40px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* --- Móviles --- */
-        @media (max-width: 600px) {
-            h1 { font-size: 2.5em; }
-            .table-box { padding: 15px; width: 95%; }
-            th, td { padding: 10px 5px; font-size: 0.9em; }
-            .accolade-item .icon { font-size: 2em; }
+ 
+        /* Estilo para resaltar fila de usuario actual */
+        .fila-usuario-actual { background-color: rgba(218, 165, 32, 0.15); font-weight: bold; }
+        .fila-usuario-actual td { color: #fff; }
+ 
+        /* --- Ajustes para Móviles --- */
+        @media (max-width: 700px) {
+            body { padding: 10px; }
+            .table-box { padding: 15px; }
+            h1 { font-size: 2.2em; }
+            h2 { font-size: 1.5em; }
+            
+            th, td { padding: 8px; font-size: 0.9em; }
+           td:first-child, th:first-child { padding-left: 10px; }
+           td:nth-child(2), th:nth-child(2) { text-align: left; }
         }
+ 
     </style>
-
+ 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <h1>Estadísticas Globales</h1>
+   <h1>Estadísticas Globales</h1>
     
     <div id="loading-message" class="loader"></div>
-
+ 
     <div id="main-content" style="display:none;">
         <div class="table-box">
             <div class="event-filter-container">
-                <label for="event-filter-select">FILTRAR POR EVENTO:</label>
-                <select id="event-filter-select"></select>
-            </div>
+               <label for="event-filter-select">Filtrar Rankings por Evento:</label>
+               <select id="event-filter-select"></select>
+           </div>
         </div>
         
-        <div class="table-box" id="honor-box">
-            <h2>👑 Cuadro de Honor (Histórico)</h2>
-            <div class="accolades-grid">
-                <div class="accolade-item">
-                    <span class="icon">👑</span>
-                    <span class="title">MVP de la Liga</span>
-                    <div class="winner" id="leader-mvp">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">⭐</span>
-                    <span class="title">Victorias Estelares</span>
-                    <div class="winner" id="leader-maincard">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">💪</span>
-                    <span class="title">Victorias Preliminares</span>
-                    <div class="winner" id="leader-prelims">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">👊</span>
-                    <span class="title">Rey del KO</span>
-                    <div class="winner" id="leader-ko">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">🥋</span>
-                    <span class="title">Maestro Sumisión</span>
-                    <div class="winner" id="leader-sumision">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">👨‍⚖️</span>
-                    <span class="title">El Juez</span>
-                    <div class="winner" id="leader-decision">...</div>
-                </div>
-            </div>
-        </div>
-
         <div id="stats-content">
             <div class="table-box">
-                <h2>🏆 Ranking de Puntos</h2>
-                <table id="tabla-puntos">
-                    <thead><tr><th>#</th><th>Usuario</th><th>Puntos</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+               <h2>🏆 Ranking de Puntos</h2>
+               <table id="tabla-puntos">
+                   <thead><tr><th>#</th><th>Usuario</th><th>Puntos</th></tr></thead>
+                   <tbody></tbody>
+               </table>
+           </div>
             <div class="table-box">
                 <h2>🎯 Ranking de Precisión</h2>
                 <table id="tabla-aciertos">
                     <thead><tr><th>#</th><th>Usuario</th><th>Aciertos</th><th>Total</th><th>Precisión (%)</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+                   <tbody></tbody>
+               </table>
+           </div>
+        </div>
+ 
+        <div class="table-box">
+            <h2>👑 Cuadro de Honor</h2>
+            <div class="accolades-grid">
+               <div class="accolade-item">
+                   <span class="icon">👑</span>
+                   <span class="title">MVP de la Liga</span>
+                   <div class="winner" id="leader-mvp">...</div>
+               </div>
+               <div class="accolade-item">
+                   <span class="icon">⭐</span>
+                   <span class="title">Victorias Estelares</span>
+                   <div class="winner" id="leader-maincard">...</div>
+               </div>
+                <div class="accolade-item">
+                   <span class="icon">💪</span>
+                   <span class="title">Victorias Preliminares</span>
+                   <div class="winner" id="leader-prelims">...</div>
+               </div>
+               <div class="accolade-item">
+                   <span class="icon">👊</span>
+                   <span class="title">Rey del KO</span>
+                   <div class="winner" id="leader-ko">...</div>
+               </div>
+               <div class="accolade-item">
+                   <span class="icon">🥋</span>
+                   <span class="title">Maestro Sumisión</span>
+                   <div class="winner" id="leader-sumision">...</div>
+               </div>
+               <div class="accolade-item">
+                   <span class="icon">👨‍⚖️</span>
+                   <span class="title">El Juez</span>
+                   <div class="winner" id="leader-decision">...</div>
+               </div>
+           </div>
         </div>
     </div>
-
+ 
 <script>
+ 
     const SUPABASE_URL = 'https://dvpckpkgiwicifweiupo.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
+ 
     let currentUser = null; 
-
-    document.addEventListener('DOMContentLoaded', async () => {
+ 
+   document.addEventListener('DOMContentLoaded', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = 'index.html'; return; }
         currentUser = session.user;
         
         await Promise.all([
-            cargarFiltroEventos(),
-            cargarEstadisticas(currentUser, null)
+           cargarFiltroEventos(),
+           cargarEstadisticas(currentUser, null)
         ]);
         
-        document.getElementById('loading-message').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
+       document.getElementById('loading-message').style.display = 'none';
+       document.getElementById('main-content').style.display = 'block';
     });
-
+ 
     async function cargarFiltroEventos() {
         const selector = document.getElementById('event-filter-select');
-        // Cargamos todos los eventos para el filtro, activos o inactivos, para ver el historial
-        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').order('id', { ascending: false });
-        
+        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').order('id', { ascending: false }); // Quitamos filtro de activo para ver histórico
         if (error) { selector.innerHTML = '<option>Error al cargar eventos</option>'; return; }
         
         let optionsHTML = '<option value="global">Estadísticas Globales (Todas)</option>';
-        eventos.forEach(evento => { optionsHTML += `<option value="${evento.id}">${evento.nombre}</option>`; });
-        selector.innerHTML = optionsHTML;
+       eventos.forEach(evento => { optionsHTML += `<option value="${evento.id}">${evento.nombre}</option>`; });
+       selector.innerHTML = optionsHTML;
         
-        selector.addEventListener('change', (e) => {
+       selector.addEventListener('change', (e) => {
             const eventoId = e.target.value === 'global' ? null : parseInt(e.target.value);
             cargarEstadisticas(currentUser, eventoId);
         });
     }
-
+ 
     async function cargarEstadisticas(currentUser, eventoId = null) {
-        // Ocultamos contenido mientras carga
-        // document.getElementById('stats-content').style.opacity = '0.5';
+        // document.getElementById('stats-content').style.display = 'none'; // Quitamos el parpadeo
+        const honorBox = document.querySelector('.accolades-grid').closest('.table-box');
+       honorBox.style.display = eventoId ? 'none' : 'block'; // Cuadro de honor solo en global
         
-        const honorBox = document.getElementById('honor-box');
-        // El Cuadro de Honor solo tiene sentido en la vista global
-        honorBox.style.display = eventoId ? 'none' : 'block'; 
-        
-        // 1. Construir la consulta
-        // Usamos !inner para asegurar que traemos datos válidos y relacionados
-        let query = supabaseClient.from('predicciones')
-            .select(`*, peleas!inner(*, eventos!inner(*)), profiles!inner(username)`);
-        
-        if (eventoId) { 
-            query = query.filter('peleas.evento_id', 'eq', eventoId); 
-        }
-        
-        const { data: predicciones, error: predError } = await query;
-        const { data: resultados, error: resError } = await supabaseClient.from('resultados').select(`*`);
-        // Traemos todos los eventos para tener sus reglas de puntos a mano
-        const { data: eventos, error: eveError } = await supabaseClient.from('eventos').select('*');
-        
-        if (predError || resError || eveError) return console.error(predError || resError || eveError);
-        
-        const stats = {};
+       // --- CAMBIO CLAVE: Peticiones separadas para evitar errores de join ---
+       const { data: predicciones, error: predError } = await supabaseClient.from('predicciones').select('*');
+       const { data: resultados, error: resError } = await supabaseClient.from('resultados').select('*');
+       const { data: eventos, error: eveError } = await supabaseClient.from('eventos').select('*');
+       const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('*');
+       const { data: profiles, error: profError } = await supabaseClient.from('profiles').select('*');
+       
+       if (predError || resError || eveError || peleasError || profError) return console.error("Error cargando datos");
+       
+       const stats = {};
 
-        for (const pred of predicciones) {
-            const userId = pred.usuario_id;
-            if (!userId) continue;
-            const username = pred.profiles ? pred.profiles.username : 'Usuario Desconocido';
+       // Inicializar stats con todos los perfiles encontrados
+       profiles.forEach(p => {
+           stats[p.id] = { 
+               username: p.username, puntos: 0, aciertos: 0, total: 0, 
+               ko_wins: 0, sub_wins: 0, decision_wins: 0, 
+               main_card_wins: 0, prelim_wins: 0 
+           };
+       });
+ 
+       for (const pred of predicciones) {
+           const userId = pred.usuario_id;
+           // Si filtramos por evento, saltamos las predicciones que no sean de ese evento
+           const pelea = peleas.find(p => p.id === pred.pelea_id);
+           if (!pelea) continue; // Seguridad
+           if (eventoId && pelea.evento_id !== eventoId) continue;
 
-            if (!stats[userId]) {
-                stats[userId] = { 
-                    username: username, puntos: 0, aciertos: 0, total: 0, 
-                    ko_wins: 0, sub_wins: 0, decision_wins: 0, 
-                    main_card_wins: 0, prelim_wins: 0 
-                };
-            }
+           if (!stats[userId]) continue; // Si el usuario no tiene perfil (borrado), saltar
 
-            stats[userId].total++;
-            const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
-
-            if (resultadoReal) {
-                const puntosGanados = calcularPuntos(pred, resultadoReal, eventos);
-                stats[userId].puntos += puntosGanados;
-
-                if (resultadoReal.ganador_real === pred.ganador_elegido) {
-                    stats[userId].aciertos++;
-                    
-                    if (pred.peleas.tipo === 'Main Card') stats[userId].main_card_wins++;
-                    else if (pred.peleas.tipo === 'Preliminar') stats[userId].prelim_wins++;
-
-                    if (pred.metodo_elegido && pred.metodo_elegido === resultadoReal.metodo_real) {
-                        if (resultadoReal.metodo_real === 'KO') stats[userId].ko_wins++;
-                        else if (resultadoReal.metodo_real === 'Submisión') stats[userId].sub_wins++;
-                        else if (resultadoReal.metodo_real === 'Decisión') stats[userId].decision_wins++;
-                    }
-                }
-            }
-        }
-        
-        const statsArray = Object.values(stats);
-        statsArray.forEach(s => s.porcentaje = s.total > 0 ? ((s.aciertos / s.total) * 100) : 0);
-        let currentUsername = currentUser?.user_metadata?.username || null;
-        
-        // Si estamos en vista global, calculamos el MVP histórico
-        if (!eventoId) {
-            calcularLiderMVP(predicciones, resultados, eventos); // MVP Real (puntos por evento)
-            
-            const findLeaders = (key) => {
-                if (statsArray.length === 0) return 'N/A';
-                const maxValue = Math.max(...statsArray.map(s => s[key]));
-                if (maxValue === 0) return 'N/A';
-                const leaders = statsArray.filter(s => s[key] === maxValue);
-                return leaders.map(l => l.username).join(', ');
-            };
-            
-            document.getElementById('leader-maincard').textContent = findLeaders('main_card_wins');
-            document.getElementById('leader-prelims').textContent = findLeaders('prelim_wins');
-            document.getElementById('leader-ko').textContent = findLeaders('ko_wins');
-            document.getElementById('leader-sumision').textContent = findLeaders('sub_wins');
-            document.getElementById('leader-decision').textContent = findLeaders('decision_wins');
-        }
-        
-        // Renderizar Tabla Puntos
-        statsArray.sort((a, b) => b.puntos - a.puntos);
-        document.querySelector("#tabla-puntos tbody").innerHTML = statsArray.map((s, index) => 
-            `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}">
-                <td>${index + 1}</td>
-                <td>${s.username}</td>
-                <td>${s.puntos}</td>
-            </tr>`
-        ).join('');
-        
-        // Renderizar Tabla Precisión
-        statsArray.sort((a, b) => b.porcentaje - a.porcentaje);
-        document.querySelector("#tabla-aciertos tbody").innerHTML = statsArray.map((s, index) => 
-            `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}">
-                <td>${index + 1}</td>
-                <td>${s.username}</td>
-                <td>${s.aciertos}</td>
-                <td>${s.total}</td>
-                <td>${s.porcentaje.toFixed(1)}%</td>
-            </tr>`
-        ).join('');
-        
-        // document.getElementById('stats-content').style.opacity = '1';
+           stats[userId].total++;
+ 
+           const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
+           const evento = eventos.find(e => e.id === pelea.evento_id);
+ 
+           if (resultadoReal && evento) {
+               const puntosGanados = calcularPuntos(pred, resultadoReal, pelea, evento);
+               stats[userId].puntos += puntosGanados;
+ 
+               if (resultadoReal.ganador_real === pred.ganador_elegido) {
+                   stats[userId].aciertos++;
+ 
+                   if (pelea.tipo === 'Main Card') stats[userId].main_card_wins++;
+                   else if (pelea.tipo === 'Preliminar') stats[userId].prelim_wins++;
+ 
+                   if (pred.metodo_elegido && pred.metodo_elegido === resultadoReal.metodo_real) {
+                       if (resultadoReal.metodo_real === 'KO') stats[userId].ko_wins++;
+                       else if (resultadoReal.metodo_real === 'Submisión') stats[userId].sub_wins++;
+                       else if (resultadoReal.metodo_real === 'Decisión') stats[userId].decision_wins++;
+                   }
+               }
+           }
+       }
+       
+       const statsArray = Object.values(stats).filter(s => s.total > 0); // Solo mostrar usuarios con actividad
+       statsArray.forEach(s => s.porcentaje = s.total > 0 ? ((s.aciertos / s.total) * 100) : 0);
+       
+       let currentUsername = currentUser?.user_metadata?.username || null;
+       
+       if (!eventoId) {
+           // Lógica de Cuadro de Honor
+           const findLeaders = (key) => {
+               if (statsArray.length === 0) return 'N/A';
+               const maxValue = Math.max(...statsArray.map(s => s[key]));
+               if (maxValue === 0) return 'N/A';
+               const leaders = statsArray.filter(s => s[key] === maxValue);
+               return leaders.map(l => l.username).join(', ');
+           };
+           
+           // Calcular MVP manualmente
+           const mvpCounts = {};
+           // (Lógica simplificada de MVP para esta vista: quien tenga más puntos totales por ahora)
+           // Para hacerlo por evento como antes, requeriría más lógica, pero dejemos los líderes globales
+           
+           document.getElementById('leader-maincard').textContent = findLeaders('main_card_wins');
+           document.getElementById('leader-prelims').textContent = findLeaders('prelim_wins');
+           document.getElementById('leader-ko').textContent = findLeaders('ko_wins');
+           document.getElementById('leader-sumision').textContent = findLeaders('sub_wins');
+           document.getElementById('leader-decision').textContent = findLeaders('decision_wins');
+           
+           // MVP real requiere iterar eventos, lo dejaremos simple por ahora o usamos la funcion auxiliar
+           calcularLiderMVP(predicciones, resultados, eventos, peleas, profiles);
+       }
+       
+       statsArray.sort((a, b) => b.puntos - a.puntos);
+       document.querySelector("#tabla-puntos tbody").innerHTML = statsArray.map((s, index) => `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}"><td>${index + 1}</td><td>${s.username}</td><td>${s.puntos}</td></tr>`).join('');
+       
+       statsArray.sort((a, b) => {
+            if (b.porcentaje !== a.porcentaje) return b.porcentaje - a.porcentaje; // Primero por %
+            return b.aciertos - a.aciertos; // Desempate por cantidad de aciertos
+       });
+      document.querySelector("#tabla-aciertos tbody").innerHTML = statsArray.map((s, index) => `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}"><td>${index + 1}</td><td>${s.username}</td><td>${s.aciertos}</td><td>${s.total}</td><td>${s.porcentaje.toFixed(1)}%</td></tr>`).join('');
+       
+       document.getElementById('stats-content').style.display = 'block';
     }
-
-    // Función para calcular quién ha ganado más "Eventos" (MVP)
-    // Un MVP es el que más puntos sacó en un evento específico.
-    async function calcularLiderMVP(predicciones, resultados, todosEventos) {
-        // Obtenemos solo IDs de eventos pasados/cerrados para no calcular sobre eventos en curso vacíos
-        const eventosIds = [...new Set(predicciones.map(p => p.peleas.evento_id))];
+ 
+    async function calcularLiderMVP(predicciones, resultados, eventos, peleas, profiles) {
+        // Obtenemos IDs de eventos únicos
+        const eventosIds = [...new Set(peleas.map(p => p.evento_id))];
         const mvpCounts = {};
 
-        for (const eventoId of eventosIds) {
-            const predsDelEvento = predicciones.filter(p => p.peleas.evento_id === eventoId);
-            if (predsDelEvento.length === 0) continue;
+        for (const evId of eventosIds) {
+            // Filtramos peleas de este evento
+            const peleasEsteEvento = peleas.filter(p => p.evento_id === evId);
+            const idsPeleasEvento = peleasEsteEvento.map(p => p.id);
+            
+            // Filtramos predicciones para estas peleas
+            const predsEvento = predicciones.filter(p => idsPeleasEvento.includes(p.pelea_id));
+            if (predsEvento.length === 0) continue;
 
             const puntosPorUsuario = {};
-            
-            for (const pred of predsDelEvento) {
+            const eventoObj = eventos.find(e => e.id === evId);
+
+            for (const pred of predsEvento) {
                 const userId = pred.usuario_id;
-                const username = pred.profiles.username;
-                if (!puntosPorUsuario[userId]) puntosPorUsuario[userId] = { username, puntos: 0 };
+                const profile = profiles.find(p => p.id === userId);
+                if (!profile) continue;
                 
-                const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
-                if (resultadoReal) {
-                    puntosPorUsuario[userId].puntos += calcularPuntos(pred, resultadoReal, todosEventos);
+                if (!puntosPorUsuario[userId]) puntosPorUsuario[userId] = { username: profile.username, puntos: 0 };
+                
+                const res = resultados.find(r => r.pelea_id === pred.pelea_id);
+                const pel = peleas.find(p => p.id === pred.pelea_id);
+                
+                if (res) {
+                    puntosPorUsuario[userId].puntos += calcularPuntos(pred, res, pel, eventoObj);
                 }
             }
-
+            
             const scores = Object.values(puntosPorUsuario);
             if (scores.length > 0) {
-                const maxScore = Math.max(...scores.map(s => s.puntos));
-                if (maxScore > 0) {
-                    const ganadores = scores.filter(s => s.puntos === maxScore);
-                    ganadores.forEach(g => {
-                        mvpCounts[g.username] = (mvpCounts[g.username] || 0) + 1;
+                const max = Math.max(...scores.map(s => s.puntos));
+                if (max > 0) {
+                    scores.filter(s => s.puntos === max).forEach(winner => {
+                        mvpCounts[winner.username] = (mvpCounts[winner.username] || 0) + 1;
                     });
                 }
             }
         }
-
+        
         const mvpArray = Object.entries(mvpCounts);
         if (mvpArray.length > 0) {
-            const maxMvps = Math.max(...mvpArray.map(([, count]) => count));
-            const mvpLeaders = mvpArray.filter(([, count]) => count === maxMvps).map(([username]) => username);
-            document.getElementById('leader-mvp').textContent = mvpLeaders.join(', ');
+            const max = Math.max(...mvpArray.map(([,c]) => c));
+            const leaders = mvpArray.filter(([,c]) => c === max).map(([u]) => u);
+            document.getElementById('leader-mvp').textContent = leaders.join(', ');
         } else {
             document.getElementById('leader-mvp').textContent = 'N/A';
         }
     }
-
-    function calcularPuntos(prediccion, resultado, eventos) {
-        let puntos = 0;
-        const peleaInfo = prediccion.peleas;
-        if (!resultado || !peleaInfo) return 0;
-        
-        // Buscamos el evento completo en la lista que pasamos (ya trae multiplicadores)
-        const eventoDeLaPelea = eventos.find(e => e.id === peleaInfo.evento_id);
-        const multiplicador = eventoDeLaPelea ? (eventoDeLaPelea.multiplicador_puntos || 1) : 1;
-        const puntosExtraRound = eventoDeLaPelea ? (eventoDeLaPelea.puntos_extra_round || 1) : 1;
-
-        if (resultado.ganador_real === prediccion.ganador_elegido) {
-            let puntosBase = 0;
-            if (peleaInfo.tipo === 'Preliminar') {
-                puntosBase = 1;
-            } else if (peleaInfo.tipo === 'Main Card') {
-                puntosBase = 2;
-            }
-
-            puntos += puntosBase * multiplicador;
-            
-            if (peleaInfo.tipo === 'Main Card' && prediccion.metodo_elegido === resultado.metodo_real) {
-                puntos += 1; 
-            }
-            if (peleaInfo.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
-                puntos += puntosExtraRound;
-            }
-        }
-        return puntos;
+ 
+    function calcularPuntos(prediccion, resultado, pelea, evento) {
+       let puntos = 0;
+       if (!resultado || !pelea) return 0;
+       
+       const multiplicador = evento ? (evento.multiplicador_puntos || 1) : 1;
+       const puntosExtraRound = evento ? (evento.puntos_extra_round || 1) : 1;
+ 
+       if (resultado.ganador_real === prediccion.ganador_elegido) {
+           let puntosBase = 0;
+           if (pelea.tipo === 'Preliminar') {
+               puntosBase = 1;
+           } else if (pelea.tipo === 'Main Card') {
+               puntosBase = 2;
+           }
+ 
+           puntos += puntosBase * multiplicador;
+           
+           if (pelea.tipo === 'Main Card' && prediccion.metodo_elegido === resultado.metodo_real) {
+               puntos += 1; 
+           }
+           if (pelea.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
+               puntos += puntosExtraRound; 
+           }
+       }
+       return puntos;
     }
 </script>
-
 </body>
 </html>
-
