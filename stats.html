@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estadísticas Globales UFC</title>
+    <title>Mi Perfil</title>
 
     <nav>
         <a href="index.html">🏠 Inicio</a>
+        <a href="stats.html">📊 Estadísticas</a>
         <a href="historial.html">📁 Historial</a>
-        <a href="perfil.html">👤 Mi Perfil</a>
     </nav>
 
     <style>
@@ -19,6 +19,7 @@
             background-color: #1a1a1a;
             color: #f2f2f2;
             margin: 0;
+            padding: 20px;
         }
 
         /* Estilos de Navegación */
@@ -26,6 +27,7 @@
             background: #111; padding: 15px 5px; text-align: center;
             border-bottom: 2px solid #DAA520; display: flex;
             justify-content: center; align-items: center;
+            margin: -20px -20px 20px -20px;
         }
         nav a {
             font-family: 'Anton', sans-serif; color: white; margin: 0 15px;
@@ -39,313 +41,307 @@
         }
 
         /* Estilos de Títulos y Contenedores */
-        h1, h2 {
+        h1, h2, h3 {
             font-family: 'Anton', sans-serif; text-transform: uppercase;
             letter-spacing: 1.5px; text-align: center; color: #DAA520;
         }
-        h1 { font-size: 3em; margin: 20px 0 40px 0; }
-        h2 { font-size: 2em; }
+        h1 { font-size: 3em; margin-bottom: 40px; }
+        h2 { font-size: 2em; margin-top: 40px; }
+        h3 { font-size: 1.5em; color: #f2f2f2; }
 
-        .table-box {
-            background: #2b2b2b; padding: 25px; margin: 20px auto 40px auto;
-            border-radius: 8px; border: 1px solid #444; border-top: 4px solid #DAA520;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3); max-width: 800px;
+        .profile-box {
+            background: #2b2b2b; padding: 30px; max-width: 800px;
+            margin: 20px auto; border-radius: 8px;
+            border: 1px solid #444; border-top: 4px solid #DAA520;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
         }
+        
+        .profile-info p {
+            font-size: 1.1em; line-height: 1.6; border-bottom: 1px solid #444;
+            padding-bottom: 10px; margin-top: 0; margin-bottom: 10px;
+            display: flex; justify-content: space-between; flex-wrap: wrap;
+        }
+        .profile-info strong { color: #ccc; }
+        .profile-info span { text-align: right; font-weight: bold; color: #fff; }
 
-        /* Estilos para el Cuadro de Honor */
-        .accolades-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+        .charts-container { 
+            display: flex; 
+            gap: 20px; 
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
-        .accolade-item {
-            background-color: #1f1f1f; padding: 15px;
-            border-radius: 8px; text-align: center; border: 1px solid #444;
+        .chart-box {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+            border: 1px solid #444; 
+            border-radius: 8px; 
+            background-color: #1f1f1f;
         }
-        .accolade-item .icon { font-size: 2em; }
-        .accolade-item .title { font-weight: bold; color: #ccc; margin-top: 5px; display: block; }
-        .accolade-item .winner { font-family: 'Anton', sans-serif; font-size: 1.4em; color: #fff; letter-spacing: 1px; min-height: 30px;}
+        .chart-box h3 { text-align: center; }
 
-        /* Estilos para el Filtro de Eventos */
-        .event-filter-container { display: flex; flex-direction: column; gap: 10px; }
-        .event-filter-container label { font-weight: bold; text-align: center; }
-        #event-filter-select {
-            background-color: #333; color: #fff; border: 1px solid #555;
-            border-radius: 5px; padding: 12px; font-size: 1em;
+        /* Estilos para los Logros */
+        .achievement { 
+            display: flex; align-items: center; padding: 15px; 
+            border-bottom: 1px solid #444; background-color: #1f1f1f; margin-bottom: 10px; border-radius: 5px;
         }
+        .achievement-icon { font-size: 2.5em; margin-right: 20px; }
+        .achievement-details h4 { margin: 0 0 5px 0; color: #DAA520; font-family: 'Anton', sans-serif; font-size: 1.2em; letter-spacing: 1px; }
+        .achievement-details p { margin: 0; font-size: 0.9em; color: #ccc; border: none; }
+        
+        .achievement.Bronce { border-left: 5px solid #cd7f32; }
+        .achievement.Plata { border-left: 5px solid #c0c0c0; }
+        .achievement.Oro { border-left: 5px solid #ffd700; }
+        .achievement.Épico { border-left: 5px solid #9932cc; background-color: #2a1a2a; }
 
-        /* Estilos de Tabla Oscura */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td {
-            border: none; border-bottom: 1px solid #444;
-            padding: 15px; text-align: center;
-        }
-        td:first-child, th:first-child { text-align: left; padding-left: 20px; }
-        td:nth-child(2), th:nth-child(2) { text-align: left; }
-        th {
-            font-family: 'Anton', sans-serif; color: #DAA520; font-size: 1.2em;
-            letter-spacing: 1px; border-bottom: 2px solid #DAA520;
-        }
-        tbody tr:hover { background-color: #3c3c3c; }
-
-        /* Indicador de Carga (Spinner) */
         .loader {
-            border: 6px solid #f3f3f3; border-top: 6px solid #DAA520;
+            border: 6px solid #333; border-top: 6px solid #DAA520;
             border-radius: 50%; width: 50px; height: 50px;
             animation: spin 1s linear infinite; margin: 40px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Estilo para resaltar fila de usuario actual */
-        .fila-usuario-actual { background-color: rgba(218, 165, 32, 0.15); font-weight: bold; }
-        .fila-usuario-actual td { color: #fff; }
-
-        /* --- NUEVO: Ajustes para Móviles --- */
+        /* Ajustes para Móviles */
         @media (max-width: 700px) {
             body { padding: 10px; }
-            .table-box { padding: 15px; }
-            h1 { font-size: 2.2em; }
-            h2 { font-size: 1.5em; }
-            th, td { padding: 8px; font-size: 0.9em; }
-            td:first-child, th:first-child { padding-left: 10px; }
-            td:nth-child(2), th:nth-child(2) { text-align: left; }
+            .profile-box { padding: 15px; }
+            h1 { font-size: 2.2em; margin-bottom: 20px; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.2em; }
+            .profile-info p { font-size: 1em; }
         }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <h1>Estadísticas Globales</h1>
+    <h1>Mi Perfil</h1>
     
     <div id="loading-message" class="loader"></div>
 
-    <div id="main-content" style="display:none;">
-        <div class="table-box">
-            <div class="event-filter-container">
-                <label for="event-filter-select">Filtrar Rankings por Evento:</label>
-                <select id="event-filter-select"></select>
-            </div>
-        </div>
+    <div id="profile-content" class="profile-box" style="display:none;">
+        <h2>Información de la Cuenta</h2>
+        <div id="account-info" class="profile-info"></div>
         
-        <div id="stats-content">
-            <div class="table-box">
-                <h2>🏆 Ranking de Puntos</h2>
-                <table id="tabla-puntos">
-                    <thead><tr><th>#</th><th>Usuario</th><th>Puntos</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+        <h2>Estadísticas Detalladas</h2>
+        <div id="detailed-stats" class="profile-info"></div>
+
+        <h2>Visualizaciones</h2>
+        <div class="charts-container">
+            <div class="chart-box">
+                <h3>Estilo de Predicción</h3>
+                <canvas id="predictionStyleChart"></canvas>
             </div>
-            <div class="table-box">
-                <h2>🎯 Ranking de Precisión</h2>
-                <table id="tabla-aciertos">
-                    <thead><tr><th>#</th><th>Usuario</th><th>Aciertos</th><th>Total</th><th>Precisión (%)</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+            <div class="chart-box">
+                <h3>Rendimiento por Evento</h3>
+                <canvas id="eventPerformanceChart"></canvas>
             </div>
         </div>
 
-        <div class="table-box" id="honor-box">
-            <h2>👑 Cuadro de Honor</h2>
-            <div class="accolades-grid">
-                <div class="accolade-item">
-                    <span class="icon">👑</span>
-                    <span class="title">MVP de la Liga</span>
-                    <div class="winner" id="leader-mvp">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">⭐</span>
-                    <span class="title">Victorias Estelares</span>
-                    <div class="winner" id="leader-maincard">...</div>
-                </div>
-                 <div class="accolade-item">
-                    <span class="icon">💪</span>
-                    <span class="title">Victorias Preliminares</span>
-                    <div class="winner" id="leader-prelims">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">👊</span>
-                    <span class="title">Rey del KO</span>
-                    <div class="winner" id="leader-ko">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">🥋</span>
-                    <span class="title">Maestro Sumisión</span>
-                    <div class="winner" id="leader-sumision">...</div>
-                </div>
-                <div class="accolade-item">
-                    <span class="icon">👨‍⚖️</span>
-                    <span class="title">El Juez</span>
-                    <div class="winner" id="leader-decision">...</div>
-                </div>
-            </div>
-        </div>
+        <h2>🏆 Vitrina de Logros</h2>
+        <div id="achievements-showcase"></div>
     </div>
 
 <script>
     const SUPABASE_URL = 'https://dvpckpkgiwicifweiupo.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    let currentUser = null; 
 
     document.addEventListener('DOMContentLoaded', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) { window.location.href = 'index.html'; return; }
-        currentUser = session.user;
-        
-        await Promise.all([
-            cargarFiltroEventos(),
-            cargarEstadisticas(currentUser, null)
-        ]);
-        
-        document.getElementById('loading-message').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-    });
-
-    async function cargarFiltroEventos() {
-        const selector = document.getElementById('event-filter-select');
-        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').order('id', { ascending: false });
-        if (error) { selector.innerHTML = '<option>Error al cargar eventos</option>'; return; }
-        
-        let optionsHTML = '<option value="global">Estadísticas Globales (Todas)</option>';
-        eventos.forEach(evento => { optionsHTML += `<option value="${evento.id}">${evento.nombre}</option>`; });
-        selector.innerHTML = optionsHTML;
-        
-        selector.addEventListener('change', (e) => {
-            const eventoId = e.target.value === 'global' ? null : parseInt(e.target.value);
-            cargarEstadisticas(currentUser, eventoId);
-        });
-    }
-
-    async function cargarEstadisticas(currentUser, eventoId = null) {
-        document.getElementById('stats-content').style.display = 'none';
-        const honorBox = document.getElementById('honor-box');
-        
-        // 1. PEDIR DATOS POR SEPARADO (Técnica "Bulletproof")
-        const { data: predicciones } = await supabaseClient.from('predicciones').select('*');
-        const { data: resultados } = await supabaseClient.from('resultados').select('*');
-        const { data: peleas } = await supabaseClient.from('peleas').select('*');
-        const { data: eventos } = await supabaseClient.from('eventos').select('*');
-        const { data: profiles } = await supabaseClient.from('profiles').select('*');
-
-        if (!predicciones || !resultados || !peleas || !eventos || !profiles) {
-            console.error("Error cargando datos esenciales.");
+        if (!session) {
+            window.location.href = 'index.html';
             return;
         }
+        await cargarPerfil(session.user);
+    });
+
+    async function cargarPerfil(user) {
+        // --- CORRECCIÓN 1: Añadimos la petición de 'logros_obtenidos' que faltaba ---
+        const [prediccionesRes, resultadosRes, eventosRes, logrosRes] = await Promise.all([
+            supabaseClient.from('predicciones').select(`*, peleas(*, eventos(nombre))`).eq('usuario_id', user.id),
+            supabaseClient.from('resultados').select(`*`),
+            supabaseClient.from('eventos').select('*'),
+            supabaseClient.from('logros_obtenidos').select(`*, logros(*)`).eq('usuario_id', user.id)
+        ]);
         
-        const stats = {};
+        const { data: predicciones, error: predError } = prediccionesRes;
+        const { data: resultados, error: resError } = resultadosRes;
+        const { data: eventos, error: eventosError } = eventosRes;
+        const { data: logrosObtenidos, error: logrosError } = logrosRes;
+        
+        if (predError || resError || eventosError || logrosError) {
+            document.getElementById('loading-message').outerHTML = "<h1>Error al cargar tus datos.</h1>";
+            return console.error(predError || resError || eventosError || logrosError);
+        }
+        
+        // --- Variables de Estadística ---
+        let totalPuntos = 0, totalAciertos = 0, totalPredicciones = predicciones.length;
+        let aciertosMetodo = 0, aciertosRound = 0, rachaActual = 0, rachaMaxima = 0;
+        const metodoCounts = { 'KO': 0, 'Submisión': 0, 'Decisión': 0 };
+        const puntosPorEvento = {};
+        const peleadorStats = {};
 
-        // Inicializar stats para todos los perfiles para que aparezcan aunque tengan 0 puntos
-        profiles.forEach(p => {
-            stats[p.id] = { 
-                username: p.username, puntos: 0, aciertos: 0, total: 0, 
-                ko_wins: 0, sub_wins: 0, decision_wins: 0, 
-                main_card_wins: 0, prelim_wins: 0 
-            };
-        });
-
+        // Ordenamos cronológicamente para la racha
+        predicciones.sort((a, b) => a.pelea_id - b.pelea_id);
+        
         for (const pred of predicciones) {
-            // Filtrado manual: Encontramos la pelea
-            const pelea = peleas.find(p => p.id === pred.pelea_id);
-            if (!pelea) continue; // Si la pelea no existe (dato huérfano), saltar
-
-            // FILTRO DE EVENTO: Si hay un evento seleccionado y esta pelea no es de ese evento, saltar
-            if (eventoId && pelea.evento_id !== eventoId) continue;
-
-            const userId = pred.usuario_id;
-            if (!stats[userId]) continue; // Si el usuario no está en perfiles, saltar
-
-            stats[userId].total++; // Contamos la predicción
-
-            const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
+            if (pred.metodo_elegido) metodoCounts[pred.metodo_elegido]++;
+            const ganadorElegido = pred.ganador_elegido;
+            if (!peleadorStats[ganadorElegido]) peleadorStats[ganadorElegido] = { picks: 0, wins: 0 };
+            peleadorStats[ganadorElegido].picks++;
             
-            // Encontramos el evento para saber las reglas de puntos
-            const evento = eventos.find(e => e.id === pelea.evento_id);
-
+            const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
             if (resultadoReal) {
-                const puntosGanados = calcularPuntos(pred, resultadoReal, pelea, evento);
-                stats[userId].puntos += puntosGanados;
-
-                if (resultadoReal.ganador_real === pred.ganador_elegido) {
-                    stats[userId].aciertos++;
+                const puntosGanados = calcularPuntos(pred, resultadoReal, eventos);
+                
+                if (puntosGanados > 0) { 
+                    totalAciertos++; 
+                    rachaActual++; 
+                    peleadorStats[ganadorElegido].wins++; 
                     
-                    if (pelea.tipo === 'Main Card') stats[userId].main_card_wins++;
-                    else if (pelea.tipo === 'Preliminar') stats[userId].prelim_wins++;
-
+                    // --- CORRECCIÓN 2: Solo contamos acierto de método si no es null ---
                     if (pred.metodo_elegido && pred.metodo_elegido === resultadoReal.metodo_real) {
-                        if (resultadoReal.metodo_real === 'KO') stats[userId].ko_wins++;
-                        else if (resultadoReal.metodo_real === 'Submisión') stats[userId].sub_wins++;
-                        else if (resultadoReal.metodo_real === 'Decisión') stats[userId].decision_wins++;
+                        aciertosMetodo++; 
                     }
+                    
+                    if (pred.peleas.es_evento_principal && (String(pred.round_elegido) === String(resultadoReal.round_real) || (pred.round_elegido === 'Decision' && resultadoReal.metodo_real === 'Decisión'))) {
+                        aciertosRound++;
+                    }
+                } else { 
+                    rachaMaxima = Math.max(rachaMaxima, rachaActual); 
+                    rachaActual = 0; 
                 }
+                
+                totalPuntos += puntosGanados;
+                // Usamos el nombre del evento para el gráfico
+                const eventoNombre = pred.peleas.eventos ? pred.peleas.eventos.nombre : `Evento #${pred.peleas.evento_id}`;
+                puntosPorEvento[eventoNombre] = (puntosPorEvento[eventoNombre] || 0) + puntosGanados;
             }
         }
+        rachaMaxima = Math.max(rachaMaxima, rachaActual);
         
-        // Filtrar usuarios con 0 predicciones en este evento para no llenar la tabla de ceros
-        let statsArray = Object.values(stats).filter(s => s.total > 0);
-        
-        statsArray.forEach(s => s.porcentaje = s.total > 0 ? ((s.aciertos / s.total) * 100) : 0);
-        let currentUsername = currentUser?.user_metadata?.username || null;
-        
-        if (eventoId) {
-            honorBox.style.display = 'none';
-        } else {
-            honorBox.style.display = 'block';
-            
-            // Calculamos el MVP de la Liga por separado, solo en la vista global
-            // Para esto, necesitamos la estructura de datos "unida" que espera esa función, o adaptarla.
-            // Para simplificar y no romper nada, usamos una versión simplificada del cálculo de líderes
-            // basada en los totales acumulados que acabamos de calcular.
-            
-            const findLeaders = (key) => {
-                if (statsArray.length === 0) return 'N/A';
-                const maxValue = Math.max(...statsArray.map(s => s[key]));
-                if (maxValue === 0) return 'N/A';
-                const leaders = statsArray.filter(s => s[key] === maxValue);
-                return leaders.map(l => l.username).join(', ');
-            };
-            
-            document.getElementById('leader-maincard').textContent = findLeaders('main_card_wins');
-            document.getElementById('leader-prelims').textContent = findLeaders('prelim_wins');
-            document.getElementById('leader-ko').textContent = findLeaders('ko_wins');
-            document.getElementById('leader-sumision').textContent = findLeaders('sub_wins');
-            document.getElementById('leader-decision').textContent = findLeaders('decision_wins');
-            
-            // El MVP es más complejo (quién ganó más eventos), lo dejaremos pendiente o usaremos el líder de puntos global por ahora
-             document.getElementById('leader-mvp').textContent = findLeaders('puntos');
+        // --- Renderizado de Datos ---
+        const accountContainer = document.getElementById('account-info');
+        accountContainer.innerHTML = `
+            <p><strong>Usuario:</strong> <span>${user.user_metadata.username || 'No definido'}</span></p>
+            <p><strong>Email:</strong> <span>${user.email}</span></p>`;
+
+        const porcentaje = totalPredicciones > 0 ? ((totalAciertos / totalPredicciones) * 100).toFixed(1) : 0;
+        const metodoFavorito = Object.keys(metodoCounts).reduce((a, b) => metodoCounts[a] > metodoCounts[b] ? a : b, 'N/A');
+        const mejorPuntuacion = Math.max(0, ...Object.values(puntosPorEvento));
+        let textoPeleadorFavorito = "N/A";
+        if (Object.keys(peleadorStats).length > 0) {
+            const nombrePeleadorFavorito = Object.keys(peleadorStats).reduce((a, b) => peleadorStats[a].picks > peleadorStats[b].picks ? a : b);
+            const statsFavorito = peleadorStats[nombrePeleadorFavorito];
+            const winRateFavorito = statsFavorito.picks > 0 ? ((statsFavorito.wins / statsFavorito.picks) * 100).toFixed(1) : 0;
+            textoPeleadorFavorito = `${nombrePeleadorFavorito} (${statsFavorito.picks} veces, ${winRateFavorito}% acierto)`;
         }
         
-        statsArray.sort((a, b) => b.puntos - a.puntos);
-        document.querySelector("#tabla-puntos tbody").innerHTML = statsArray.map((s, index) => `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}"><td>${index + 1}</td><td>${s.username}</td><td>${s.puntos}</td></tr>`).join('');
+        const statsContainer = document.getElementById('detailed-stats');
+        statsContainer.innerHTML = `
+            <p><strong>Puntos Totales:</strong> <span>${totalPuntos}</span></p>
+            <p><strong>Aciertos Globales:</strong> <span>${totalAciertos} de ${totalPredicciones} (${porcentaje}%)</span></p>
+            <hr style="border-color: #444;">
+            <p><strong>Estilo de Predicción:</strong> <span>${metodoFavorito}</span></p>
+            <p><strong>Peleador de la Casa:</strong> <span>${textoPeleadorFavorito}</span></p>
+            <hr style="border-color: #444;">
+            <p><strong>Aciertos de Método Exacto:</strong> <span>${aciertosMetodo}</span></p>
+            <p><strong>Aciertos de Round Principal:</strong> <span>${aciertosRound}</span></p>
+            <hr style="border-color: #444;">
+            <p><strong>Mejor Puntuación en un Evento:</strong> <span>${mejorPuntuacion} puntos</span></p>
+            <p><strong>Mejor Racha de Aciertos:</strong> <span>${rachaMaxima} peleas</span></p>`;
+
+        // --- Renderizado de Logros ---
+        const achievementsContainer = document.getElementById('achievements-showcase');
+        if (!logrosObtenidos || logrosObtenidos.length === 0) {
+            achievementsContainer.innerHTML = "<p style='text-align:center; color:#888;'>Aún no has desbloqueado ningún logro. ¡Sigue jugando!</p>";
+        } else {
+            achievementsContainer.innerHTML = '';
+            logrosObtenidos.forEach(logro => {
+                const logroData = logro.logros;
+                const categoria = logroData.categoria || 'Bronce';
+                const icono = {'Bronce':'🥉','Plata':'🥈','Oro':'🥇','Épico':'🏆'}[categoria];
+                achievementsContainer.innerHTML += `
+                    <div class="achievement ${categoria}">
+                        <div class="achievement-icon">${icono}</div>
+                        <div class="achievement-details">
+                            <h4>${logroData.nombre}</h4>
+                            <p>${logroData.descripcion}</p>
+                        </div>
+                    </div>`;
+            });
+        }
         
-        statsArray.sort((a, b) => { 
-             if (b.porcentaje !== a.porcentaje) return b.porcentaje - a.porcentaje;
-             return b.total - a.total; 
+        // --- Configuración de Gráficos ---
+        // Aseguramos que el texto de los gráficos sea visible en fondo oscuro
+        Chart.defaults.color = '#ccc';
+        Chart.defaults.borderColor = '#444';
+
+        new Chart(document.getElementById('predictionStyleChart'), {
+            type: 'pie',
+            data: {
+                labels: ['KO/TKO', 'Submisión', 'Decisión'],
+                datasets: [{
+                    label: 'Veces Elegido',
+                    data: [metodoCounts['KO'], metodoCounts['Submisión'], metodoCounts['Decisión']],
+                    backgroundColor: ['#d9534f', '#5bc0de', '#f0ad4e'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true }
         });
-        document.querySelector("#tabla-aciertos tbody").innerHTML = statsArray.map((s, index) => `<tr class="${s.username === currentUsername ? 'fila-usuario-actual' : ''}"><td>${index + 1}</td><td>${s.username}</td><td>${s.aciertos}</td><td>${s.total}</td><td>${s.porcentaje.toFixed(1)}%</td></tr>`).join('');
         
-        document.getElementById('stats-content').style.display = 'block';
+        new Chart(document.getElementById('eventPerformanceChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(puntosPorEvento),
+                datasets: [{
+                    label: 'Puntos Conseguidos',
+                    data: Object.values(puntosPorEvento),
+                    backgroundColor: '#5cb85c',
+                    borderColor: '#4cae4c',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#333' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('profile-content').style.display = 'block';
     }
 
-    // Función de cálculo (Adaptada para recibir objetos separados)
-    function calcularPuntos(prediccion, resultado, pelea, evento) {
+    function calcularPuntos(prediccion, resultado, eventos) {
         let puntos = 0;
-        if (!resultado || !pelea) return 0;
+        const peleaInfo = prediccion.peleas;
+        if (!resultado || !peleaInfo) return 0;
         
-        const multiplicador = evento ? (evento.multiplicador_puntos || 1) : 1;
-        const puntosExtraRound = evento ? (evento.puntos_extra_round || 1) : 1;
+        const eventoDeLaPelea = eventos.find(e => e.id === peleaInfo.evento_id);
+        // Si el evento no tiene configuración específica, usamos defaults (x1 y 1 extra)
+        const multiplicador = eventoDeLaPelea ? (eventoDeLaPelea.multiplicador_puntos || 1) : 1;
+        const puntosExtraRound = eventoDeLaPelea ? (eventoDeLaPelea.puntos_extra_round || 1) : 1;
 
         if (resultado.ganador_real === prediccion.ganador_elegido) {
             let puntosBase = 0;
-            if (pelea.tipo === 'Preliminar') puntosBase = 1;
-            else if (pelea.tipo === 'Main Card') puntosBase = 2;
+            if (peleaInfo.tipo === 'Preliminar') {
+                puntosBase = 1;
+            } else if (peleaInfo.tipo === 'Main Card') {
+                puntosBase = 2;
+            }
 
             puntos += puntosBase * multiplicador;
             
-            if (pelea.tipo === 'Main Card' && prediccion.metodo_elegido && prediccion.metodo_elegido === resultado.metodo_real) {
-                puntos += 1; 
+            if (peleaInfo.tipo === 'Main Card' && prediccion.metodo_elegido && prediccion.metodo_elegido === resultado.metodo_real) {
+                puntos += 1;
             }
-            if (pelea.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
+            if (peleaInfo.es_evento_principal && (String(resultado.round_real) === String(prediccion.round_elegido) || (prediccion.round_elegido === 'Decision' && resultado.metodo_real === 'Decisión'))) {
                 puntos += puntosExtraRound;
             }
         }
@@ -353,7 +349,5 @@
     }
 </script>
 
-</body>
-</html>
 </body>
 </html>
