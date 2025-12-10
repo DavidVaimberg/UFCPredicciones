@@ -386,11 +386,11 @@ async function sendRecoveryEmail() {
 }
 
 async function updateUserPassword() {
-    const newPassword = document.getElementById('new-password').value.trim();
+     newPassword = document.getElementById('new-password').value.trim();
     if (!newPassword) return alert('Ingresa una contraseña válida.');
 
     // Actualizamos el usuario con la nueva clave
-    const { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
+     { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
 
     if (error) return alert('Error al actualizar: ' + error.message);
     
@@ -401,9 +401,9 @@ async function updateUserPassword() {
 }
 
     async function login() {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+         email = document.getElementById('login-email').value;
+         password = document.getElementById('login-password').value;
+         { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) return alert('Error al iniciar sesión: Email o contraseña incorrectos.');
         currentUser = data.user;
         await showPredictionScreen();
@@ -415,7 +415,7 @@ async function updateUserPassword() {
     }
 
     async function showPredictionScreen() {
-        const eventSelector = document.getElementById('event-selector');
+         eventSelector = document.getElementById('event-selector');
         if (!eventSelector.value || eventSelector.value === "No hay eventos activos") return;
         currentEvent = { id: eventSelector.value, name: eventSelector.options[eventSelector.selectedIndex].text };
         document.getElementById('auth-section').classList.add('hidden');
@@ -428,9 +428,9 @@ async function updateUserPassword() {
         } else {
             document.getElementById('admin-section').classList.add('hidden');
             document.getElementById('prediction-section').classList.remove('hidden');
-            const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', currentEvent.id).limit(1);
+             { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', currentEvent.id).limit(1);
             if (peleasError || !peleas || peleas.length === 0) { document.getElementById('fight-list').innerHTML = "<h2>No se encontraron peleas para este evento.</h2>"; return; }
-            const { count, error: predictionError } = await supabaseClient.from('predicciones').select('*', { count: 'exact', head: true }).eq('usuario_id', currentUser.id).eq('pelea_id', peleas[0].id);
+             { count, error: predictionError } = await supabaseClient.from('predicciones').select('*', { count: 'exact', head: true }).eq('usuario_id', currentUser.id).eq('pelea_id', peleas[0].id);
             if (predictionError) { document.getElementById('fight-list').innerHTML = "<h2>Error al verificar tus predicciones.</h2>"; console.error("Error al contar predicciones:", predictionError); return; }
             if (count > 0) { document.getElementById('fight-list').innerHTML = "<h2>Ya has guardado tus predicciones para este evento. ¡Mucha suerte!</h2>"; document.getElementById('submit-btn').classList.add('hidden'); } 
             else { renderFights(); document.getElementById('submit-btn').classList.remove('hidden'); }
@@ -438,14 +438,14 @@ async function updateUserPassword() {
     }
 
     async function renderFights() {
-        const container = document.getElementById("fight-list");
+         container = document.getElementById("fight-list");
         container.innerHTML = '<h2>Cargando peleas...</h2>'; // Indicador de carga simple
-        const { data: peleas, error } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
+         { data: peleas, error } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
         if (error) { console.error('Error cargando peleas:', error); container.innerHTML = '<h2>Error al cargar las peleas.</h2>'; return; }
         peleasDelEvento = peleas;
         container.innerHTML = '';
         peleas.forEach(f => {
-            const fightCard = document.createElement("div");
+             fightCard = document.createElement("div");
             fightCard.className = "fight";
             fightCard.setAttribute('data-pelea-id', f.id);
             let extraFieldsHTML = '';
@@ -472,13 +472,13 @@ async function updateUserPassword() {
                 <div class="extra-fields-container">
                     ${extraFieldsHTML}
                 </div>`;
-            const corners = fightCard.querySelectorAll('.fighter-corner');
+             corners = fightCard.querySelectorAll('.fighter-corner');
             corners.forEach(corner => {
                 corner.addEventListener('click', () => {
                     fightCard.querySelectorAll('.fighter-corner').forEach(c => c.classList.remove('selected'));
                     corner.classList.add('selected');
                     // Marcamos el radio button oculto correspondiente
-                    const radioId = corner.getAttribute('for');
+                     radioId = corner.getAttribute('for');
                     document.getElementById(radioId).checked = true; 
                 });
             });
@@ -487,18 +487,18 @@ async function updateUserPassword() {
     }
 
     async function submitPredictions() {
-        const submitButton = document.getElementById('submit-btn');
+         submitButton = document.getElementById('submit-btn');
         submitButton.disabled = true; submitButton.textContent = 'Enviando...';
-        const predictionsToInsert = [];
-        for (const pelea of peleasDelEvento) {
-            const ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
+         predictionsToInsert = [];
+        for ( pelea of peleasDelEvento) {
+             ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
             if (!ganadorSeleccionado) { alert(`Debes elegir un ganador para: "${pelea.nombre}"`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; }
             let metodo = null, round = null;
-            if (pelea.tipo === 'Main Card') { const metodoSelect = document.getElementById(`method_${pelea.id}`); if (!metodoSelect || !metodoSelect.value) { alert(`Debes elegir un método para: "${pelea.nombre}"`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; } metodo = metodoSelect.value; }
+            if (pelea.tipo === 'Main Card') {  metodoSelect = document.getElementById(`method_${pelea.id}`); if (!metodoSelect || !metodoSelect.value) { alert(`Debes elegir un método para: "${pelea.nombre}"`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; } metodo = metodoSelect.value; }
             if (pelea.es_evento_principal) { const roundSelect = document.getElementById(`round_${pelea.id}`); if (!roundSelect || !roundSelect.value) { alert(`Debes elegir un round para la pelea principal`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; } round = roundSelect.value; }
             predictionsToInsert.push({ usuario_id: currentUser.id, pelea_id: pelea.id, ganador_elegido: ganadorSeleccionado.value, metodo_elegido: metodo, round_elegido: round });
         }
-        const { error } = await supabaseClient.from('predicciones').insert(predictionsToInsert);
+        const { error } = await supabaseClient.from('predicciones').upsert(predictionsToInsert);
         if (error) { console.error('Error al guardar predicciones:', error); alert(`Hubo un error al guardar: ${error.message}`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; }
         alert('¡Predicciones guardadas con éxito!');
         document.getElementById('fight-list').innerHTML = "<h2>¡Gracias! Tus predicciones han sido guardadas. ¡Mucha suerte!</h2>";
