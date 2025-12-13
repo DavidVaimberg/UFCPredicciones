@@ -26,7 +26,7 @@
             padding: 20px;
         }
 
-        /* ---- Estilos para la Barra de Navegación (NAV) - ACTUALIZADO CON FLEXBOX ---- */
+        /* ---- Estilos para la Barra de Navegación (NAV) ---- */
         nav {
             background: #111;
             padding: 15px 5px;
@@ -147,8 +147,7 @@
         .hidden {
             display: none;
         }
-        /* --- FIN DEL ESTILO GENERAL --- */
-        /* --- ESTILOS PARA LAS NUEVAS TARJETAS DE PELEA --- */
+        /* --- ESTILOS PARA LAS TARJETAS DE PELEA --- */
         .fight-title {
             font-family: 'Anton', sans-serif;
             text-align: center;
@@ -212,7 +211,7 @@
             margin-bottom: 10px;
             color: #DAA520;
         }
-        .admin-options label { /* Estilo más compacto para las opciones del admin */
+        .admin-options label { 
             display: inline-block;
             margin-right: 15px;
             margin-top: 5px;
@@ -220,7 +219,7 @@
         .admin-options input[type="radio"] {
             margin-right: 5px;
         }
-        .admin-options .special-result { /* Colores para Draw y NC */
+        .admin-options .special-result { 
             font-weight: bold;
         }
         .admin-options .draw-label { color: orange; }
@@ -247,8 +246,8 @@
                 <select id="event-selector"></select>
                 <button onclick="login()">Entrar</button>
                 <p style="text-align:center; margin-top:10px;">
-    <a href="#" onclick="toggleForgotForm()" style="color:#ccc; font-size:0.9em;">Vergo bobo que olvido la contraseña</a>
-</p>
+                    <a href="#" onclick="toggleForgotForm()" style="color:#ccc; font-size:0.9em;">¿Olvidaste tu contraseña?</a>
+                </p>
                 <p>¿No tienes cuenta? <a href="#" onclick="toggleAuthForms()">Regístrate</a></p>
             </div>
             <div id="register-form" class="hidden">
@@ -265,23 +264,27 @@
         </div>
     </div>
 
-    <div id="forgot-form" class="hidden">
-    <h2>Recuperar Cuenta</h2>
-    <p style="text-align:center; color:#ccc; font-size:0.9em; margin-bottom:15px;">Ingresa tu email y te enviaremos un enlace.</p>
-    <label for="forgot-email">Email:</label>
-    <input type="email" id="forgot-email" placeholder="tu@email.com">
-    <button onclick="sendRecoveryEmail()">Enviar Enlace</button>
-    <p style="text-align:center; margin-top:15px;">
-        <a href="#" onclick="toggleForgotForm()" style="color:#DAA520;">Volver al inicio de sesión</a>
-    </p>
-</div>
+    <div id="forgot-form" class="hidden section">
+        <div class="login-box">
+            <h2>Recuperar Cuenta</h2>
+            <p style="text-align:center; color:#ccc; font-size:0.9em; margin-bottom:15px;">Ingresa tu email y te enviaremos un enlace.</p>
+            <label for="forgot-email">Email:</label>
+            <input type="email" id="forgot-email" placeholder="tu@email.com">
+            <button onclick="sendRecoveryEmail()">Enviar Enlace</button>
+            <p style="text-align:center; margin-top:15px;">
+                <a href="#" onclick="toggleForgotForm()" style="color:#DAA520;">Volver al inicio de sesión</a>
+            </p>
+        </div>
+    </div>
 
-<div id="update-password-form" class="hidden">
-    <h2>Nueva Contraseña</h2>
-    <label for="new-password">Nueva Contraseña:</label>
-    <input type="password" id="new-password">
-    <button onclick="updateUserPassword()">Guardar Nueva Contraseña</button>
-</div>
+    <div id="update-password-form" class="hidden section">
+        <div class="login-box">
+            <h2>Nueva Contraseña</h2>
+            <label for="new-password">Nueva Contraseña:</label>
+            <input type="password" id="new-password">
+            <button onclick="updateUserPassword()">Guardar Nueva Contraseña</button>
+        </div>
+    </div>
 
     <div class="section hidden" id="prediction-section">
         <div class="panel-box">
@@ -311,34 +314,36 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     // Cambia este email por el tuyo si es diferente
-    const ADMIN_EMAIL = "dogecoin1ve@gmail.com"; 
+    const ADMIN_EMAIL = "dogecoinve@gmail.com"; 
 
     let currentUser = null;
     let currentEvent = null;
     let peleasDelEvento = []; // Caché global
 
     document.addEventListener('DOMContentLoaded', async () => {
-    await loadActiveEvents(); // Tu función de cargar eventos
+        await loadActiveEvents(); // Tu función de cargar eventos
 
-    // Escuchamos cambios en la sesión (Login, Logout, y RECUPERACIÓN)
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-            // Si el usuario viene del correo de recuperación, mostramos el formulario de cambio
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('forgot-form').classList.add('hidden');
-            document.getElementById('update-password-form').classList.remove('hidden');
-        } else if (session) {
-            // Si hay sesión normal (o acaba de cambiar la clave)
-            currentUser = session.user;
-            const eventSelector = document.getElementById('event-selector');
-            // Si hay un evento seleccionado, mostramos la pantalla de predicción
-            if (eventSelector.value && eventSelector.value !== "No hay eventos activos") {
-                await showPredictionScreen();
+        // Escuchamos cambios en la sesión (Login, Logout, y RECUPERACIÓN)
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                // Si el usuario viene del correo de recuperación, mostramos el formulario de cambio
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.add('hidden');
+                document.getElementById('forgot-form').classList.add('hidden');
+                document.getElementById('update-password-form').classList.remove('hidden');
+                // Ocultar sección de auth normal
+                document.getElementById('auth-section').classList.add('hidden');
+            } else if (session) {
+                // Si hay sesión normal (o acaba de cambiar la clave)
+                currentUser = session.user;
+                const eventSelector = document.getElementById('event-selector');
+                // Si hay un evento seleccionado, mostramos la pantalla de predicción
+                if (eventSelector.value && eventSelector.value !== "No hay eventos activos") {
+                    await showPredictionScreen();
+                }
             }
-        }
+        });
     });
-});
 
     function toggleAuthForms() {
         document.getElementById('login-form').classList.toggle('hidden');
@@ -367,43 +372,53 @@
     }
 
     function toggleForgotForm() {
-    document.getElementById('login-form').classList.toggle('hidden');
-    document.getElementById('forgot-form').classList.toggle('hidden');
-}
+        // Alternar visibilidad dentro del contenedor principal si es necesario
+        // Pero como hemos separado los divs en sections, manejamos las clases hidden
+        const loginBox = document.getElementById('auth-section');
+        const forgotBox = document.getElementById('forgot-form');
+        
+        if (forgotBox.classList.contains('hidden')) {
+            loginBox.classList.add('hidden');
+            forgotBox.classList.remove('hidden');
+        } else {
+            forgotBox.classList.add('hidden');
+            loginBox.classList.remove('hidden');
+        }
+    }
 
-async function sendRecoveryEmail() {
-    const email = document.getElementById('forgot-email').value.trim();
-    if (!email) return alert('Por favor, ingresa tu email.');
+    async function sendRecoveryEmail() {
+        const email = document.getElementById('forgot-email').value.trim();
+        if (!email) return alert('Por favor, ingresa tu email.');
 
-    // Supabase envía el correo
-    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.href, // Vuelve a esta misma página
-    });
+        // Supabase envía el correo
+        const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.href, // Vuelve a esta misma página
+        });
 
-    if (error) return alert('Error: ' + error.message);
-    alert('Correo enviado. Revisa tu bandeja de entrada (y spam).');
-    toggleForgotForm(); // Volvemos a mostrar el login
-}
+        if (error) return alert('Error: ' + error.message);
+        alert('Correo enviado. Revisa tu bandeja de entrada (y spam).');
+        toggleForgotForm(); // Volvemos a mostrar el login
+    }
 
-async function updateUserPassword() {
-     newPassword = document.getElementById('new-password').value.trim();
-    if (!newPassword) return alert('Ingresa una contraseña válida.');
+    async function updateUserPassword() {
+        const newPassword = document.getElementById('new-password').value.trim();
+        if (!newPassword) return alert('Ingresa una contraseña válida.');
 
-    // Actualizamos el usuario con la nueva clave
-     { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
+        // Actualizamos el usuario con la nueva clave
+        const { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
 
-    if (error) return alert('Error al actualizar: ' + error.message);
-    
-    alert('¡Contraseña actualizada! Ya estás conectado.');
-    // Ocultamos el formulario y mostramos la app normal
-    document.getElementById('update-password-form').classList.add('hidden');
-    // La sesión se actualiza sola, el listener lo detectará
-}
+        if (error) return alert('Error al actualizar: ' + error.message);
+        
+        alert('¡Contraseña actualizada! Ya estás conectado.');
+        // Ocultamos el formulario y mostramos la app normal
+        document.getElementById('update-password-form').classList.add('hidden');
+        // La sesión se actualiza sola, el listener lo detectará y mostrará la pantalla de predicción
+    }
 
     async function login() {
-         email = document.getElementById('login-email').value;
-         password = document.getElementById('login-password').value;
-         { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) return alert('Error al iniciar sesión: Email o contraseña incorrectos.');
         currentUser = data.user;
         await showPredictionScreen();
@@ -415,10 +430,12 @@ async function updateUserPassword() {
     }
 
     async function showPredictionScreen() {
-         eventSelector = document.getElementById('event-selector');
+        const eventSelector = document.getElementById('event-selector');
         if (!eventSelector.value || eventSelector.value === "No hay eventos activos") return;
         currentEvent = { id: eventSelector.value, name: eventSelector.options[eventSelector.selectedIndex].text };
         document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('forgot-form').classList.add('hidden'); // Asegurar que esté oculto
+        document.getElementById('update-password-form').classList.add('hidden');
         document.getElementById('welcome-user').innerText = `Bienvenido, ${currentUser.user_metadata.username || currentUser.email} (${currentEvent.name})`;
 
         if (currentUser.email === ADMIN_EMAIL) {
@@ -428,24 +445,31 @@ async function updateUserPassword() {
         } else {
             document.getElementById('admin-section').classList.add('hidden');
             document.getElementById('prediction-section').classList.remove('hidden');
-             { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', currentEvent.id).limit(1);
+            // AQUI ESTABA EL ERROR DE SINTAXIS ANTES (Faltaban const/let en destructuring)
+            const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', currentEvent.id).limit(1);
+            
             if (peleasError || !peleas || peleas.length === 0) { document.getElementById('fight-list').innerHTML = "<h2>No se encontraron peleas para este evento.</h2>"; return; }
-             { count, error: predictionError } = await supabaseClient.from('predicciones').select('*', { count: 'exact', head: true }).eq('usuario_id', currentUser.id).eq('pelea_id', peleas[0].id);
+            
+            const { count, error: predictionError } = await supabaseClient.from('predicciones').select('*', { count: 'exact', head: true }).eq('usuario_id', currentUser.id).eq('pelea_id', peleas[0].id);
+            
             if (predictionError) { document.getElementById('fight-list').innerHTML = "<h2>Error al verificar tus predicciones.</h2>"; console.error("Error al contar predicciones:", predictionError); return; }
+            
             if (count > 0) { document.getElementById('fight-list').innerHTML = "<h2>Ya has guardado tus predicciones para este evento. ¡Mucha suerte!</h2>"; document.getElementById('submit-btn').classList.add('hidden'); } 
             else { renderFights(); document.getElementById('submit-btn').classList.remove('hidden'); }
         }
     }
 
     async function renderFights() {
-         container = document.getElementById("fight-list");
+        const container = document.getElementById("fight-list");
         container.innerHTML = '<h2>Cargando peleas...</h2>'; // Indicador de carga simple
-         { data: peleas, error } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
+        // ERROR CORREGIDO: Añadido const
+        const { data: peleas, error } = await supabaseClient.from('peleas').select('*').eq('evento_id', currentEvent.id).order('id', { ascending: true });
+        
         if (error) { console.error('Error cargando peleas:', error); container.innerHTML = '<h2>Error al cargar las peleas.</h2>'; return; }
         peleasDelEvento = peleas;
         container.innerHTML = '';
         peleas.forEach(f => {
-             fightCard = document.createElement("div");
+            const fightCard = document.createElement("div");
             fightCard.className = "fight";
             fightCard.setAttribute('data-pelea-id', f.id);
             let extraFieldsHTML = '';
@@ -472,13 +496,13 @@ async function updateUserPassword() {
                 <div class="extra-fields-container">
                     ${extraFieldsHTML}
                 </div>`;
-             corners = fightCard.querySelectorAll('.fighter-corner');
+            const corners = fightCard.querySelectorAll('.fighter-corner');
             corners.forEach(corner => {
                 corner.addEventListener('click', () => {
                     fightCard.querySelectorAll('.fighter-corner').forEach(c => c.classList.remove('selected'));
                     corner.classList.add('selected');
                     // Marcamos el radio button oculto correspondiente
-                     radioId = corner.getAttribute('for');
+                    const radioId = corner.getAttribute('for');
                     document.getElementById(radioId).checked = true; 
                 });
             });
@@ -487,30 +511,37 @@ async function updateUserPassword() {
     }
 
     async function submitPredictions() {
-         submitButton = document.getElementById('submit-btn');
+        const submitButton = document.getElementById('submit-btn');
         submitButton.disabled = true; submitButton.textContent = 'Enviando...';
-         predictionsToInsert = [];
-        for ( pelea of peleasDelEvento) {
-             ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
+        const predictionsToInsert = [];
+        // ERROR CORREGIDO: Añadido const en el for loop
+        for (const pelea of peleasDelEvento) {
+            const ganadorSeleccionado = document.querySelector(`input[name='fight_${pelea.id}']:checked`);
             if (!ganadorSeleccionado) { alert(`Debes elegir un ganador para: "${pelea.nombre}"`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; }
             let metodo = null, round = null;
-            if (pelea.tipo === 'Main Card') {  metodoSelect = document.getElementById(`method_${pelea.id}`); if (!metodoSelect || !metodoSelect.value) { alert(`Debes elegir un método para: "${pelea.nombre}"`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; } metodo = metodoSelect.value; }
+            // ERROR CORREGIDO: Añadido const
+            if (pelea.tipo === 'Main Card') { const metodoSelect = document.getElementById(`method_${pelea.id}`); if (!metodoSelect || !metodoSelect.value) { alert(`Debes elegir un método para: "${pelea.nombre}"`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; } metodo = metodoSelect.value; }
             if (pelea.es_evento_principal) { const roundSelect = document.getElementById(`round_${pelea.id}`); if (!roundSelect || !roundSelect.value) { alert(`Debes elegir un round para la pelea principal`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; } round = roundSelect.value; }
             predictionsToInsert.push({ usuario_id: currentUser.id, pelea_id: pelea.id, ganador_elegido: ganadorSeleccionado.value, metodo_elegido: metodo, round_elegido: round });
         }
-        const { error } = await supabaseClient.from('predicciones').upsert(predictionsToInsert);
+        
+        // --- AQUÍ ESTÁ EL ARREGLO IMPORTANTE (UPSERT) ---
+        // Usamos upsert para evitar errores de duplicados si alguien reenvía
+        const { error } = await supabaseClient.from('predicciones').upsert(predictionsToInsert, { onConflict: 'usuario_id, pelea_id' });
+        
         if (error) { console.error('Error al guardar predicciones:', error); alert(`Hubo un error al guardar: ${error.message}`); submitButton.disabled = false; submitButton.textContent = 'Enviar Predicciones'; return; }
         alert('¡Predicciones guardadas con éxito!');
         document.getElementById('fight-list').innerHTML = "<h2>¡Gracias! Tus predicciones han sido guardadas. ¡Mucha suerte!</h2>";
         document.getElementById('submit-btn').classList.add('hidden');
         try {
             const { data: logro } = await supabaseClient.from('logros').select('id').eq('clave_unica', 'NOVATO_VALIENTE').single();
-            if (logro) { await supabaseClient.from('logros_obtenidos').insert({ usuario_id: currentUser.id, logro_id: logro.id, evento_id: currentEvent.id }); console.log('Intento de dar logro "Novato Valiente" completado.'); }
-        } catch (error) { console.log('Usuario probablemente ya tiene el logro "Novato Valiente".'); }
+            // Upsert para el logro también para evitar duplicados
+            if (logro) { await supabaseClient.from('logros_obtenidos').upsert({ usuario_id: currentUser.id, logro_id: logro.id, evento_id: currentEvent.id }, { onConflict: 'usuario_id, logro_id' }); console.log('Intento de dar logro completado.'); }
+        } catch (error) { console.log('Logro probablemente ya existente.'); }
     }
 
     // ==========================================================
-    // ===== FUNCIONES DEL PANEL DE ADMIN ACTUALIZADAS =========
+    // ===== FUNCIONES DEL PANEL DE ADMIN =========
     // ==========================================================
 
     async function renderAdminPanel() {
@@ -561,7 +592,11 @@ async function updateUserPassword() {
             radios.forEach(radio => {
                 radio.addEventListener('change', (event) => {
                     const selectedValue = event.target.value;
-                    const extraFieldsDiv = document.querySelector(`.admin-fight-entry[data-pelea-id='${f.id}'] .admin-extra-fields`);
+                    // Búsqueda más robusta del contenedor padre
+                    // Usamos una búsqueda relativa al radio button
+                    const entryDiv = radio.closest('.admin-fight-entry');
+                    const extraFieldsDiv = entryDiv.querySelector('.admin-extra-fields');
+                    
                     if (!extraFieldsDiv) return;
 
                     let newExtraFieldsHTML = '';
@@ -576,30 +611,6 @@ async function updateUserPassword() {
                      extraFieldsDiv.innerHTML = newExtraFieldsHTML;
                 });
             });
-             // Establecer estado inicial al cargar
-             const initialWinner = resultadoGuardado.ganador_real;
-             const initialExtraFieldsDiv = document.querySelector(`.admin-fight-entry[data-pelea-id='${f.id}'] .admin-extra-fields`);
-             if (initialExtraFieldsDiv && (initialWinner === 'Draw' || initialWinner === 'NC')) {
-                 initialExtraFieldsDiv.innerHTML = '';
-             } else if (initialExtraFieldsDiv) {
-                 // Re-render inicial con valores guardados si no es Draw/NC
-                 let initialHTML = '';
-                 if (f.tipo === 'Main Card') {
-                     initialHTML += `<br><label>Método Real:</label><select id="admin_method_${f.id}">
-                                         <option value="">Selecciona...</option>
-                                         <option value="KO" ${resultadoGuardado.metodo_real === 'KO' ? 'selected' : ''}>KO/TKO</option>
-                                         <option value="Submisión" ${resultadoGuardado.metodo_real === 'Submisión' ? 'selected' : ''}>Submisión</option>
-                                         <option value="Decisión" ${resultadoGuardado.metodo_real === 'Decisión' ? 'selected' : ''}>Decisión</option>
-                                     </select>`;
-                 }
-                 if (f.es_evento_principal) {
-                     initialHTML += `<br><label>Round Real:</label><input type="number" id="admin_round_${f.id}" min="1" max="${f.numero_de_rounds}" value="${resultadoGuardado.round_real || ''}">`;
-                 }
-                 initialExtraFieldsDiv.innerHTML = initialHTML;
-             }
-             // Añadir el atributo data-pelea-id al div principal para la selección
-             const entryDiv = container.querySelector(`strong:contains("${f.nombre}")`)?.closest('.admin-fight-entry');
-             if(entryDiv) entryDiv.setAttribute('data-pelea-id', f.id);
         });
     }
 
