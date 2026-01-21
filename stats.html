@@ -293,7 +293,6 @@
         const honorBox = document.getElementById('honor-box');
         if (eventoId) { honorBox.style.display = 'none'; } else { honorBox.style.display = 'block'; }
         
-        // --- AQUÍ ESTÁ LA SOLUCIÓN DEFINITIVA: fetchAll ---
         const [predsRes, resRes, peleasRes, eventosRes, profilesRes] = await Promise.all([
             fetchAll('predicciones'), 
             fetchAll('resultados'),
@@ -313,7 +312,6 @@
             return;
         }
 
-        // Enriquecemos las predicciones manualmente
         const prediccionesEnriquecidas = predicciones.map(p => {
             return {
                 ...p,
@@ -381,9 +379,11 @@
         
         let statsArray = Object.values(stats);
         
-        // Mostrar usuarios aunque tengan 0 puntos, para que se vea el ranking inicial en 2026
-        // Pero opcionalmente podemos ocultar los que nunca han participado si prefieres
-        // statsArray = statsArray.filter(s => s.total > 0); 
+        // --- FILTRO DE USUARIOS OCULTOS ---
+        // Aquí defines quienes NO quieres que salgan. Poner nombres en minúscula para evitar errores.
+        const usuariosOcultos = ['rafix', 'admin', 'prueba'];
+        statsArray = statsArray.filter(s => !usuariosOcultos.includes(s.username.toLowerCase()));
+        // ----------------------------------
         
         statsArray.forEach(s => s.porcentaje = s.total > 0 ? ((s.aciertos / s.total) * 100) : 0);
         let currentUsername = currentUser?.user_metadata?.username || null;
@@ -438,11 +438,14 @@
             for (const pred of predsDelEvento) {
                 const userId = pred.usuario_id;
                 const username = pred.profiles.username;
+                // También filtramos aquí para que no salgan como MVP
+                const excluded = ['rafix', 'admin', 'prueba'];
+                if (excluded.includes(username.toLowerCase())) continue;
+
                 if (!puntuaciones[userId]) puntuaciones[userId] = { username: username, puntos: 0 };
                 
                 const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
                 if (resultadoReal) {
-                    // Pasamos el objeto evento correcto
                     puntuaciones[userId].puntos += calcularPuntos(pred, resultadoReal, pred.peleas, eventosTemporada.find(e => e.id === eventoId));
                 }
             }
