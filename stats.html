@@ -66,12 +66,13 @@
         .accolade-item .title { font-weight: bold; color: #ccc; margin-top: 5px; display: block; }
         .accolade-item .winner { font-family: 'Anton', sans-serif; font-size: 1.4em; color: #fff; letter-spacing: 1px; min-height: 30px;}
 
-        /* Estilos para el Filtro de Eventos */
-        .event-filter-container { display: flex; flex-direction: column; gap: 10px; }
-        .event-filter-container label { font-weight: bold; text-align: center; }
-        #event-filter-select {
+        /* Estilos para el Filtro de Eventos y Temporada */
+        .event-filter-container { display: flex; flex-direction: column; gap: 15px; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
+        .event-filter-container label { font-weight: bold; text-align: center; color: #DAA520; }
+        select {
             background-color: #333; color: #fff; border: 1px solid #555;
-            border-radius: 5px; padding: 12px; font-size: 1em;
+            border-radius: 5px; padding: 12px; font-size: 1em; width: 100%;
         }
 
         /* Estilos de Tabla Oscura */
@@ -122,8 +123,18 @@
     <div id="main-content" style="display:none;">
         <div class="table-box">
             <div class="event-filter-container">
-                <label for="event-filter-select">Filtrar Rankings por Evento:</label>
-                <select id="event-filter-select"></select>
+                <div class="filter-group">
+                    <label for="season-filter">Temporada (Año):</label>
+                    <select id="season-filter">
+                        <option value="2026" selected>2026 (Liga Actual)</option>
+                        <option value="2025">2025 (Histórico)</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="event-filter-select">Filtrar Rankings por Evento:</label>
+                    <select id="event-filter-select"></select>
+                </div>
             </div>
         </div>
         
@@ -187,11 +198,27 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let currentUser = null; 
+    let currentSeason = 2026; // Temporada por defecto
 
     document.addEventListener('DOMContentLoaded', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) { window.location.href = 'index.html'; return; }
         currentUser = session.user;
+
+        // Listener para cambio de temporada
+        const seasonSelect = document.getElementById('season-filter');
+        seasonSelect.addEventListener('change', async (e) => {
+            currentSeason = parseInt(e.target.value);
+            document.getElementById('loading-message').style.display = 'block';
+            document.getElementById('main-content').style.display = 'none';
+            // Recargamos todo al cambiar la temporada
+            await Promise.all([
+                cargarFiltroEventos(),
+                cargarEstadisticas(currentUser, null)
+            ]);
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+        });
         
         await Promise.all([
             cargarFiltroEventos(),
@@ -231,14 +258,31 @@
 
     async function cargarFiltroEventos() {
         const selector = document.getElementById('event-filter-select');
-        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').eq('esta_activo', false).order('id', { ascending: false });
+        // AHORA TRAEMOS TAMBIÉN LA COLUMNA 'temporada'
+        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre, esta_activo, temporada').eq('esta_activo', false).order('id', { ascending: false });
+        
         if (error) { selector.innerHTML = '<option>Error al cargar eventos</option>'; return; }
         
-        let optionsHTML = '<option value="global">Estadísticas Globales (Todas)</option>';
-        eventos.forEach(evento => { optionsHTML += `<option value="${evento.id}">${evento.nombre}</option>`; });
+        // FILTRAMOS LOS EVENTOS SEGÚN LA TEMPORADA SELECCIONADA
+        const eventosFiltrados = eventos.filter(e => {
+            if (currentSeason === 2025) {
+                // Para 2025, incluimos los que dicen 2025 O los que son NULL (viejos)
+                return e.temporada === 2025 || e.temporada === null;
+            } else {
+                // Para 2026 en adelante, coincidencia exacta
+                return e.temporada === currentSeason;
+            }
+        });
+
+        let optionsHTML = `<option value="global">Estadísticas Temporada ${currentSeason} (Todas)</option>`;
+        eventosFiltrados.forEach(evento => { optionsHTML += `<option value="${evento.id}">${evento.nombre}</option>`; });
         selector.innerHTML = optionsHTML;
         
-        selector.addEventListener('change', (e) => {
+        // Recreamos el listener para asegurar que no se duplique
+        const newSelector = selector.cloneNode(true);
+        selector.parentNode.replaceChild(newSelector, selector);
+        
+        newSelector.addEventListener('change', (e) => {
             const eventoId = e.target.value === 'global' ? null : parseInt(e.target.value);
             cargarEstadisticas(currentUser, eventoId);
         });
@@ -250,13 +294,12 @@
         if (eventoId) { honorBox.style.display = 'none'; } else { honorBox.style.display = 'block'; }
         
         // --- AQUÍ ESTÁ LA SOLUCIÓN DEFINITIVA: fetchAll ---
-        // Usamos la función de bucle para traer TODO, sin importar el límite de 1000
         const [predsRes, resRes, peleasRes, eventosRes, profilesRes] = await Promise.all([
             fetchAll('predicciones'), 
             fetchAll('resultados'),
             fetchAll('peleas'),
-            supabaseClient.from('eventos').select('*'), // Eventos son pocos, no necesita fetchAll
-            supabaseClient.from('profiles').select('*')  // Perfiles son pocos, no necesita fetchAll
+            supabaseClient.from('eventos').select('*'), 
+            supabaseClient.from('profiles').select('*') 
         ]);
 
         const predicciones = predsRes.data;
@@ -270,9 +313,6 @@
             return;
         }
 
-        // --- DIAGNÓSTICO ---
-        console.log("¡ÉXITO! Total real de predicciones descargadas:", predicciones.length);
-
         // Enriquecemos las predicciones manualmente
         const prediccionesEnriquecidas = predicciones.map(p => {
             return {
@@ -282,9 +322,22 @@
             };
         }).filter(p => p.peleas && p.profiles); 
 
-        let prediccionesAProcesar = prediccionesEnriquecidas;
+        // PRIMER FILTRO: Por Temporada
+        let prediccionesTemporada = prediccionesEnriquecidas.filter(p => {
+            const evento = eventos.find(e => e.id === p.peleas.evento_id);
+            if (!evento) return false;
+            
+            if (currentSeason === 2025) {
+                return evento.temporada === 2025 || evento.temporada === null;
+            } else {
+                return evento.temporada === currentSeason;
+            }
+        });
+
+        // SEGUNDO FILTRO: Por Evento específico (si se seleccionó uno)
+        let prediccionesAProcesar = prediccionesTemporada;
         if (eventoId) {
-            prediccionesAProcesar = prediccionesEnriquecidas.filter(p => p.peleas.evento_id === eventoId);
+            prediccionesAProcesar = prediccionesTemporada.filter(p => p.peleas.evento_id === eventoId);
         }
         
         const stats = {};
@@ -305,7 +358,6 @@
             stats[userId].total++;
 
             const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
-            // Usamos el evento enriquecido o buscamos en la lista
             const evento = eventos.find(e => e.id === pred.peleas.evento_id);
 
             if (resultadoReal) {
@@ -328,17 +380,22 @@
         }
         
         let statsArray = Object.values(stats);
-        if (eventoId) {
-             statsArray = statsArray.filter(s => s.total > 0);
-        } else {
-             statsArray = statsArray.filter(s => s.total > 0); 
-        }
+        
+        // Mostrar usuarios aunque tengan 0 puntos, para que se vea el ranking inicial en 2026
+        // Pero opcionalmente podemos ocultar los que nunca han participado si prefieres
+        // statsArray = statsArray.filter(s => s.total > 0); 
         
         statsArray.forEach(s => s.porcentaje = s.total > 0 ? ((s.aciertos / s.total) * 100) : 0);
         let currentUsername = currentUser?.user_metadata?.username || null;
         
         if (!eventoId) {
-            calcularLiderMVP(prediccionesEnriquecidas, resultados, eventos);
+            // Pasamos solo los eventos de la temporada actual a la función MVP
+            const eventosDeTemporada = eventos.filter(e => {
+                if(currentSeason === 2025) return e.temporada === 2025 || e.temporada === null;
+                return e.temporada === currentSeason;
+            });
+
+            calcularLiderMVP(prediccionesTemporada, resultados, eventosDeTemporada);
             
             const findLeaders = (key) => {
                 if (statsArray.length === 0) return 'N/A';
@@ -367,15 +424,13 @@
         document.getElementById('stats-content').style.display = 'block';
     }
 
-    async function calcularLiderMVP(prediccionesEnriquecidas, resultados, todosEventos) {
-        const { data: eventosCerrados } = await supabaseClient.from('eventos').select('id').eq('esta_activo', false);
-        if (!eventosCerrados) return;
-
-        const eventosIds = eventosCerrados.map(e => e.id);
+    async function calcularLiderMVP(prediccionesDeTemporada, resultados, eventosTemporada) {
+        // Solo consideramos eventos CERRADOS de esta temporada
+        const eventosIds = eventosTemporada.filter(e => e.esta_activo === false).map(e => e.id);
         const mvpCounts = {};
 
         for (const eventoId of eventosIds) {
-            const predsDelEvento = prediccionesEnriquecidas.filter(p => p.peleas.evento_id === eventoId);
+            const predsDelEvento = prediccionesDeTemporada.filter(p => p.peleas.evento_id === eventoId);
             if (predsDelEvento.length === 0) continue;
 
             const puntuaciones = {};
@@ -387,7 +442,8 @@
                 
                 const resultadoReal = resultados.find(r => r.pelea_id === pred.pelea_id);
                 if (resultadoReal) {
-                    puntuaciones[userId].puntos += calcularPuntos(pred, resultadoReal, pred.peleas, todosEventos.find(e => e.id === eventoId));
+                    // Pasamos el objeto evento correcto
+                    puntuaciones[userId].puntos += calcularPuntos(pred, resultadoReal, pred.peleas, eventosTemporada.find(e => e.id === eventoId));
                 }
             }
 
