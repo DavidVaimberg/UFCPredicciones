@@ -50,10 +50,9 @@
                 justify-content: space-around; 
             }
             nav a {
-                /* El estilo duplicado aquí ha sido eliminado para mayor claridad */
-                font-size: 1em; /* Ajustado para móviles */
-                margin: 0 5px; /* Menor margen en móviles */
-                letter-spacing: normal; /* Espaciado normal en móviles */
+                font-size: 1em; 
+                margin: 0 5px; 
+                letter-spacing: normal; 
             }
         }
         /* --- Fin de Estilos de Navegación --- */
@@ -76,6 +75,14 @@
             border-radius: 10px;
             border-top: 4px solid #DAA520;
         }
+        
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
         select { 
             font-size: 16px; 
             padding: 10px; 
@@ -84,7 +91,7 @@
             background-color: #333;
             color: #fff;
             border: 1px solid #555;
-            box-sizing: border-box; /* Añadido para consistencia */
+            box-sizing: border-box; 
         }
         table { 
             width: 100%; 
@@ -121,7 +128,7 @@
             text-align: center; 
         }
         
-        /* Estilo para el loader (si lo quieres añadir) */
+        /* Estilo para el loader */
         .loader {
             border: 6px solid #555;
             border-top: 6px solid #DAA520;
@@ -143,6 +150,12 @@
   <div class="content">
     <h1>Historial de Predicciones</h1>
 
+    <label for="season-select">Selecciona Temporada:</label>
+    <select id="season-select">
+        <option value="2026" selected>2026 (Liga Actual)</option>
+        <option value="2025">2025 (Histórico)</option>
+    </select>
+
     <label for="evento-select">Selecciona un evento para ver el historial:</label>
     <select id="evento-select"></select>
 
@@ -154,6 +167,8 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cGNrcGtnaXdpY2lmd2VpdXBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzAzMzgsImV4cCI6MjA3MDA0NjMzOH0.37X7ZZ9cNDUlplHSSGrypxhmAKXpHUyFdrq9nJOdhbw';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    let currentSeason = 2026; // Temporada por defecto
+
     document.addEventListener('DOMContentLoaded', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
@@ -161,6 +176,15 @@
             return;
         }
         
+        // Listener para cambio de temporada
+        const seasonSelect = document.getElementById('season-select');
+        seasonSelect.addEventListener('change', async (e) => {
+            currentSeason = parseInt(e.target.value);
+            // Limpiamos el contenedor y recargamos eventos
+            document.getElementById("historial-container").innerHTML = '<p>Selecciona un evento para empezar.</p>';
+            await cargarEventos();
+        });
+
         await cargarEventos();
         
         const selector = document.getElementById("evento-select");
@@ -171,17 +195,32 @@
         const selector = document.getElementById("evento-select");
         selector.innerHTML = '<option value="">Cargando eventos...</option>';
         
-        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre').order('id', { ascending: false });
+        // Traemos también la columna 'temporada'
+        const { data: eventos, error } = await supabaseClient.from('eventos').select('id, nombre, temporada').order('id', { ascending: false });
 
         if (error) {
             selector.innerHTML = '<option value="">Error al cargar eventos</option>';
             return console.error(error);
         }
 
-        selector.innerHTML = '<option value="">-- Selecciona un evento --</option>';
-        eventos.forEach(evento => {
-            selector.innerHTML += `<option value="${evento.id}">${evento.nombre}</option>`;
+        // Filtramos por la temporada seleccionada
+        const eventosFiltrados = eventos.filter(e => {
+            if (currentSeason === 2025) {
+                return e.temporada === 2025 || e.temporada === null;
+            } else {
+                return e.temporada === currentSeason;
+            }
         });
+
+        selector.innerHTML = '<option value="">-- Selecciona un evento --</option>';
+        
+        if (eventosFiltrados.length === 0) {
+            selector.innerHTML += '<option disabled>No hay eventos en esta temporada</option>';
+        } else {
+            eventosFiltrados.forEach(evento => {
+                selector.innerHTML += `<option value="${evento.id}">${evento.nombre}</option>`;
+            });
+        }
     }
 
     async function mostrarHistorial() {
@@ -193,7 +232,6 @@
             return;
         }
 
-        // Puedes añadir aquí el loader si quieres
         container.innerHTML = '<div class="loader"></div><p>Cargando historial...</p>'; 
 
         const { data: peleas, error: peleasError } = await supabaseClient.from('peleas').select('id').eq('evento_id', eventoId);
@@ -240,17 +278,15 @@
                 let ganadorRealTexto = 'N/A';
 
                 if (res) {
-                    ganadorRealTexto = res.ganador_real; // Guardamos el valor original
+                    ganadorRealTexto = res.ganador_real; 
                     if (res.ganador_real === 'Draw') {
                         resultadoTexto = 'Empate';
-                        ganadorRealTexto = 'Empate'; // Mostramos Empate también como "Ganador"
+                        ganadorRealTexto = 'Empate';
                     } else if (res.ganador_real === 'NC') {
                         resultadoTexto = 'No Contest';
-                        ganadorRealTexto = 'NC'; // Mostramos NC también como "Ganador"
+                        ganadorRealTexto = 'NC';
                     } else {
-                        // Si hubo un ganador, construimos el texto del resultado
                         resultadoTexto = (res.metodo_real || '') + (res.round_real ? ' R' + res.round_real : '');
-                         // Aseguramos que el texto no esté vacío si no hay método ni round
                         if (!resultadoTexto.trim()) resultadoTexto = 'N/A';
                     }
                 }
@@ -274,4 +310,3 @@
 
 </body>
 </html>
-
